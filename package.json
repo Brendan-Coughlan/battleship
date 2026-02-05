@@ -1,0 +1,23 @@
+{
+  "name": "battleship",
+  "version": "0.0.1",
+  "description": "CSC710 Project 1",
+  "keywords": [
+    "battleship"
+  ],
+  "homepage": "https://github.com/Brendan-Coughlan/battleship#readme",
+  "bugs": {
+    "url": "https://github.com/Brendan-Coughlan/battleship/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brendan-Coughlan/battleship.git"
+  },
+  "license": "MIT",
+  "author": "Brendan & Jiaxing",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
