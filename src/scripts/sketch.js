@@ -1,12 +1,17 @@
-let board;
+import { Board } from "./Board.js";
 
-function setup() {
-  createCanvas(windowWidth, windowHeight);
+const sketch = (p) => {
+  let board;
 
-  board = new Board(10, 50);
-}
+  p.setup = () => {
+    p.createCanvas(p.windowWidth, p.windowHeight);
+    board = new Board(p, 10, 50);
+  };
 
-function draw() {
-  background(255);
-  board.draw()
-}
+  p.draw = () => {
+    p.background(255);
+    board.draw();
+  };
+};
+
+new p5(sketch);

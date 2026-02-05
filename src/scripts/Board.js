@@ -1,15 +1,17 @@
-class Board {
-  constructor(boardSize, cellSize) {
+export class Board {
+  constructor(p, boardSize, cellSize) {
+    this.p = p;
     this.boardSize = boardSize;
     this.cellSize = cellSize;
   }
 
   draw() {
-    fill(0, 0, 255);
+    const p = this.p;
+    p.fill(0, 0, 255);
 
     for (let x = 0; x < this.boardSize; x++) {
       for (let y = 0; y < this.boardSize; y++) {
-        rect(
+        p.rect(
           x * this.cellSize,
           y * this.cellSize,
           this.cellSize,
@@ -19,5 +21,3 @@ class Board {
     }
   }
 }
-
-export { Board };
