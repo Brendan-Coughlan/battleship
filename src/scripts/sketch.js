@@ -1,9 +1,11 @@
 import { Board } from "./Board.js";
+import { GameManager } from "./GameManager.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
 
 const sketch = (p) => {
-  let player_board;
-  let opponent_board;
+  let playerBoard1;
+  let playerBoard2;
+  let gameManager;
 
   let totalShips = null;
 
@@ -31,8 +33,9 @@ const sketch = (p) => {
       totalShips = null;
     }
 
-    player_board = new Board(p, p.width / 2 - 400, p.height / 2, 10, 50);
-    opponent_board = new Board(p, p.width / 2 + 400, p.height / 2, 10, 50);
+    gameManager = new GameManager(p);
+    playerBoard1 = new Board(p, p.width / 2 - 400, p.height / 2, 10, 50);
+    playerBoard2 = new Board(p, p.width / 2 + 400, p.height / 2, 10, 50);
   };
 
   p.draw = () => {
@@ -43,15 +46,16 @@ const sketch = (p) => {
     }
 
     p.background(255);
-    player_board.draw();
-    opponent_board.draw();
+    playerBoard1.draw();
+    playerBoard2.draw();
+    gameManager.drawTurn();
   };
 
   p.mousePressed = () => {
     // block interaction until ships chosen
     if (totalShips === null) return;
 
-    const cell = opponent_board.getCellAt(p.mouseX, p.mouseY);
+    const cell = playerBoard2.getCellAt(p.mouseX, p.mouseY);
     if (cell) cell.state = 1;
   };
 };
