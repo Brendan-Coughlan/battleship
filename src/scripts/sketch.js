@@ -1,6 +1,7 @@
 import { Board } from "./Board.js";
 import { GameManager } from "./GameManager.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
+import { toastsWindow } from "./plugins/toastsWindow.js";
 
 const sketch = (p) => {
   let playerBoard1;
@@ -16,6 +17,11 @@ const sketch = (p) => {
     noText: "Return",
     min: 1,
     max: 5,
+  });
+
+  const toast = toastsWindow({
+    position: "top-center",
+    delay: 1000,
   });
 
   p.setup = async () => {
@@ -57,6 +63,12 @@ const sketch = (p) => {
 
     const cell = playerBoard2.getCellAt(p.mouseX, p.mouseY);
     if (cell) cell.state = 1;
+
+    // toast window test
+    // hit
+    toast.render({ message: "Hit!", variant: "success" });
+    // miss
+    toast.render({ message: "Miss!", variant: "danger" });
   };
 };
 
