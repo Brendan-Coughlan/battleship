@@ -18,7 +18,7 @@ export class Cell
         this.state = 0;
     }
 
-    draw()
+    render()
     {
         const p = this.p;
 

@@ -25,7 +25,7 @@ export class Board
     }
   }
 
-  draw()
+  render()
   {
     const p = this.p;
     let borderPixelSize = this.boardSize * this.cellSize;
@@ -36,7 +36,7 @@ export class Board
     {
       for (let row = 0; row < this.boardSize; row++)
       {
-        this.cells[col][row].draw();
+        this.cells[col][row].render();
       }
     }
 
