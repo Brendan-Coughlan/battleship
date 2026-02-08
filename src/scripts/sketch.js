@@ -1,5 +1,6 @@
 import { GameManager } from "./GameManager.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
+import { toastsWindow } from "./plugins/toastsWindow.js";
 
 const sketch = (p) => {
   let gameManager;
@@ -13,6 +14,11 @@ const sketch = (p) => {
     noText: "Return",
     min: 1,
     max: 5,
+  });
+
+  const toast = toastsWindow({
+    position: "top-center",
+    delay: 1000,
   });
 
   p.setup = async () => {

@@ -56,6 +56,12 @@ export class GameManager {
     if (!cell || cell.state !== 0) return;
 
     cell.state = 1;
+
+    // hit
+    toast.render({ message: "Hit!", variant: "success" });
+    // miss
+    toast.render({ message: "Miss!", variant: "danger" });
+
     this.nextTurn();
   }
 }
