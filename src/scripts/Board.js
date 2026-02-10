@@ -1,4 +1,5 @@
 import { Cell } from "./Cell.js";
+import { Ship } from "./Ship.js";
 
 export class Board
 {
@@ -10,6 +11,7 @@ export class Board
     this.boardSize = boardSize;
     this.cellSize = cellSize;
     this.cells = [];
+    this.ships = []
 
     let borderPixelSize = boardSize * cellSize;
     let startX = x - borderPixelSize / 2;
@@ -68,6 +70,46 @@ export class Board
       );
     }
   }
+
+  getCellsForPlacement(col, row, length, orientation)
+  {
+    const cells = [];
+
+    for (let i = 0; i < length; i++)
+    {
+      const c = orientation === "H" ? col + i : col;
+      const r = orientation === "V" ? row + i : row;
+
+      if (
+        c < 0 || c >= this.boardSize ||
+        r < 0 || r >= this.boardSize
+      )
+      {
+        return null;
+      }
+
+      const cell = this.cells[c][r];
+      if (cell.ship) return null;
+
+      cells.push(cell);
+    }
+
+    return cells;
+  }
+
+
+  placeShip(col, row, length, orientation)
+  {
+    const cells = this.getCellsForPlacement(col, row, length, orientation);
+    if (!cells) return false;
+
+    const ship = new Ship(length);
+    ship.place(cells);
+
+    this.ships.push(ship);
+    return true;
+  }
+
 
   getCellAt(px, py)
   {

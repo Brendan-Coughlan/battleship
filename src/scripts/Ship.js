@@ -1,39 +1,37 @@
-// configuration of the ship
-// the length of the ship is always 1, but it is ocnfigurable
-const config = {
-  length: 1,
-};
-
-class Ship {
-  /**
-   *
-   * @param {*} width the height of the ship
-   * @param {*} color the color of the ship
-   */
-  constructor(width, color) {
-    // the size of the ship
-    this.width = width;
-    this.length = config.length;
-    //
-    this.color = color;
-    // # of times the ship being hit
+export class Ship
+{
+  constructor(length)
+  {
+    this.length = length;
     this.hits = 0;
+    this.cells = [];
   }
 
-  /**
-   * when the ship was hit, call hit funciton
-   */
-  hit() {
+  hit()
+  {
     this.hits++;
   }
 
+  place(cells)
+  {
+    if (cells.length !== this.length)
+    {
+      throw new Error("Invalid ship placement");
+    }
+
+    this.cells = cells;
+    for (const cell of cells)
+    {
+      cell.ship = this;
+    }
+  }
+
   /**
-   * determine whether the ship is sunk
-   * @returns true if the ship is sunk
-   */
-  isSunk() {
-    return this.hits >= this.length * this.width;
+  * determine whether the ship is sunk
+  * @returns true if the ship is sunk
+  */
+  isSunk()
+  {
+    return this.hits >= this.length;
   }
 }
-
-export { Ship };

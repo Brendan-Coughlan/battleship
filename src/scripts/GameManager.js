@@ -16,8 +16,10 @@ const toast = toastsWindow({
   delay: 1000,
 });
 
-export class GameManager {
-  constructor(p) {
+export class GameManager
+{
+  constructor(p)
+  {
     this.p = p;
     this.currentPlayer = 1;
     this.totalShips = null;
@@ -28,6 +30,11 @@ export class GameManager {
       2: new Board(p, p.width / 2 + 400, p.height / 2, 10, 50),
     };
 
+    this.shipsPlaced = {
+      1: 0,
+      2: 0
+    };
+
     this.popup = popup;
     this.toast = toast;
   }
@@ -36,24 +43,28 @@ export class GameManager {
   // userChoice is an object records user click yes or no
   // if click yes: {ok: true, value: x}
   // if click return: {ok: false, value: 1}
-  async init() {
+  async init()
+  {
     const userChoice = await this.popup.render();
 
-    if (!userChoice.ok) {
+    if (!userChoice.ok)
+    {
       this.state = "INIT";
       return;
     }
 
     this.totalShips = userChoice.value;
-    this.state = "PLAY";
+    this.state = "SETUP";
+    this.setup();
   }
 
-  /**
-   * render available ships for player to place on the board
-   */
-  renderAvailableShips() { }
+  setup()
+  {
 
-  render() {
+  }
+
+  render()
+  {
     const p = this.p;
 
     if (this.state === "INIT") return;
@@ -61,7 +72,8 @@ export class GameManager {
     p.background(255);
     this.boards[1].render()
     this.boards[2].render()
-    switch (this.state) {
+    switch (this.state)
+    {
       case "SETUP":
         break;
       case "PLAY":
@@ -72,35 +84,88 @@ export class GameManager {
     }
   }
 
-  renderTurnLabel() {
+  renderTurnLabel()
+  {
     const p = this.p;
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(25);
     p.text(`Player ${this.currentPlayer}'s Turn`, p.width / 2, 50);
   }
 
-  getOpponentBoard() {
+  getOpponentBoard()
+  {
     return this.currentPlayer === 1 ? this.boards[2] : this.boards[1];
   }
 
-  nextTurn() {
+  nextTurn()
+  {
     this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
   }
 
-  handleClick(x, y) {
-    if (this.state !== "PLAY") return;
+  handleClick(x, y)
+  {
+    if (this.state === "SETUP")
+    {
+      this.handleSetupClick(x, y);
+      return;
+    }
 
+    if (this.state === "PLAY")
+    {
+      this.handlePlayClick(x, y);
+    }
+  }
+
+  handleSetupClick(x, y)
+  {
+    const board = this.boards[this.currentPlayer];
+    const cell = board.getCellAt(x, y);
+    if (!cell) return;
+
+    let placed = board.placeShip(
+      cell.col,
+      cell.row,
+      this.shipsPlaced[this.currentPlayer] + 1,
+      "H"
+    );
+
+    if(!placed) return;
+
+    this.shipsPlaced[this.currentPlayer]++;
+
+    if (this.shipsPlaced[this.currentPlayer] >= this.totalShips)
+    {
+      if (this.currentPlayer === 1)
+      {
+        this.currentPlayer = 2;
+        this.toast.render({ message: "Player 2 place ships", variant: "info" });
+      } else
+      {
+        this.state = "PLAY";
+        this.currentPlayer = 1;
+        this.toast.render({ message: "Battle begins!", variant: "success" });
+      }
+    }
+  }
+
+  handlePlayClick(x, y)
+  {
     const board = this.getOpponentBoard();
     const cell = board.getCellAt(x, y);
-    if (!cell || cell.state !== 0) return;
+    if (!cell || cell.state !== "EMPTY") return;
 
-    cell.state = 1;
+    const isHit = cell.fire();
 
-    // hit
-    this.toast.render({ message: "Hit!", variant: "success" });
-    // miss
-    this.toast.render({ message: "Miss!", variant: "danger" });
+    this.toast.render({
+      message: isHit ? "Hit!" : "Miss!",
+      variant: isHit ? "success" : "danger"
+    });
+
+    if(cell.ship.isSunk()) {
+        this.toast.render({ message: "Ship is sunk", variant: "success" });
+    }
 
     this.nextTurn();
   }
+
 }
