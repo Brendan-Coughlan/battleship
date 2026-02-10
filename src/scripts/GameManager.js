@@ -1,4 +1,5 @@
 import { Board } from "./Board.js";
+import { Player } from "./Player.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
@@ -13,26 +14,27 @@ const popup = selNumWindow({
 
 const toast = toastsWindow({
   position: "top-center",
-  delay: 1000,
+  delay: 2000,
 });
 
-export class GameManager
-{
-  constructor(p)
-  {
+export class GameManager {
+  constructor(p) {
     this.p = p;
     this.currentPlayer = 1;
     this.totalShips = null;
     this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
 
+    const player1Board = new Board(p, p.width / 2 - 400, p.height / 2, 10, 50);
+    const player2Board = new Board(p, p.width / 2 + 400, p.height / 2, 10, 50);
+
     this.boards = {
-      1: new Board(p, p.width / 2 - 400, p.height / 2, 10, 50),
-      2: new Board(p, p.width / 2 + 400, p.height / 2, 10, 50),
+      1: player1Board,
+      2: player2Board,
     };
 
-    this.shipsPlaced = {
-      1: 0,
-      2: 0
+    this.players = {
+      1: new Player(1, player1Board),
+      2: new Player(2, player2Board),
     };
 
     this.popup = popup;
@@ -43,12 +45,10 @@ export class GameManager
   // userChoice is an object records user click yes or no
   // if click yes: {ok: true, value: x}
   // if click return: {ok: false, value: 1}
-  async init()
-  {
+  async init() {
     const userChoice = await this.popup.render();
 
-    if (!userChoice.ok)
-    {
+    if (!userChoice.ok) {
       this.state = "INIT";
       return;
     }
@@ -58,30 +58,25 @@ export class GameManager
     this.setup();
   }
 
-  setup()
-  {
+  setup() {}
 
-  }
-
-  render()
-  {
+  render() {
     const p = this.p;
 
     if (this.state === "INIT") return;
 
     p.background(255);
-    this.boards[1].render(this.currentPlayer == 2)
-    this.boards[2].render(this.currentPlayer == 1)
-    switch (this.state)
-    {
+    this.boards[1].render(this.currentPlayer == 2);
+    this.boards[2].render(this.currentPlayer == 1);
+    switch (this.state) {
       case "SETUP":
-        this.renderLabel(`Player ${this.currentPlayer}'s Setup`)
+        this.renderLabel(`Player ${this.currentPlayer}'s Setup`);
         break;
       case "PLAY":
         this.renderLabel(`Player ${this.currentPlayer}'s Turn`);
         break;
       case "GAME_OVER":
-        this.renderLabel("Game Over")
+        this.renderLabel("Game Over");
         break;
     }
   }
@@ -93,57 +88,55 @@ export class GameManager
     p.text(labelText, p.width / 2, 50);
   }
 
-  getOpponentBoard()
-  {
+  getOpponentBoard() {
     return this.currentPlayer === 1 ? this.boards[2] : this.boards[1];
   }
 
-  nextTurn()
-  {
+  getCurrentPlayer() {
+    return this.players[this.currentPlayer];
+  }
+
+  nextTurn() {
     this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
   }
 
-  handleClick(x, y)
-  {
+  handleClick(x, y) {
     if (this.state === "GAME_OVER") return;
 
-    if (this.state === "SETUP")
-    {
+    if (this.state === "SETUP") {
       this.handleSetupClick(x, y);
       return;
     }
 
-    if (this.state === "PLAY")
-    {
+    if (this.state === "PLAY") {
       this.handlePlayClick(x, y);
     }
   }
 
-  handleSetupClick(x, y)
-  {
+  handleSetupClick(x, y) {
+    const player = this.getCurrentPlayer();
     const board = this.boards[this.currentPlayer];
     const cell = board.getCellAt(x, y);
     if (!cell) return;
 
-    let placed = board.placeShip(
-      cell.col,
-      cell.row,
-      this.shipsPlaced[this.currentPlayer] + 1,
-      "H"
-    );
+    // let placed = board.placeShip(
+    //   cell.col,
+    //   cell.row,
+    //   this.shipsPlaced[this.currentPlayer] + 1,
+    //   "H",
+    // );
+    const shipId = player.shipsPlaced + 1;
+    const placed = player.placeShip(cell.col, cell.row, shipId, "H");
 
-    if(!placed) return;
+    if (!placed) return;
 
-    this.shipsPlaced[this.currentPlayer]++;
+    // this.shipsPlaced[this.currentPlayer]++;
 
-    if (this.shipsPlaced[this.currentPlayer] >= this.totalShips)
-    {
-      if (this.currentPlayer === 1)
-      {
+    if (player.shipsPlaced >= this.totalShips) {
+      if (this.currentPlayer === 1) {
         this.currentPlayer = 2;
         this.toast.render({ message: "Player 2 place ships", variant: "info" });
-      } else
-      {
+      } else {
         this.state = "PLAY";
         this.currentPlayer = 1;
         this.toast.render({ message: "Battle begins!", variant: "success" });
@@ -151,8 +144,7 @@ export class GameManager
     }
   }
 
-  handlePlayClick(x, y)
-  {
+  handlePlayClick(x, y) {
     const board = this.getOpponentBoard();
     const cell = board.getCellAt(x, y);
     if (!cell || cell.state !== "EMPTY") return;
@@ -161,19 +153,18 @@ export class GameManager
 
     this.toast.render({
       message: isHit ? "Hit!" : "Miss!",
-      variant: isHit ? "success" : "danger"
+      variant: isHit ? "success" : "danger",
     });
 
-    if(isHit && cell.ship.isSunk()) {
-        this.toast.render({ message: "Ship is sunk", variant: "success" });
+    if (isHit && cell.ship.isSunk()) {
+      this.toast.render({ message: "Ship is sunk", variant: "success" });
 
-        if(board.allShipsSunk()) {
-          this.state = "GAME_OVER";
-          return;
-        }
+      if (board.allShipsSunk()) {
+        this.state = "GAME_OVER";
+        return;
+      }
     }
 
     this.nextTurn();
   }
-
 }
