@@ -70,26 +70,27 @@ export class GameManager
     if (this.state === "INIT") return;
 
     p.background(255);
-    this.boards[1].render()
-    this.boards[2].render()
+    this.boards[1].render(this.currentPlayer == 2)
+    this.boards[2].render(this.currentPlayer == 1)
     switch (this.state)
     {
       case "SETUP":
+        this.renderLabel(`Player ${this.currentPlayer}'s Setup`)
         break;
       case "PLAY":
-        this.renderTurnLabel();
+        this.renderLabel(`Player ${this.currentPlayer}'s Turn`);
         break;
       case "GAME_OVER":
+        this.renderLabel("Game Over")
         break;
     }
   }
 
-  renderTurnLabel()
-  {
+  renderLabel(labelText) {
     const p = this.p;
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(25);
-    p.text(`Player ${this.currentPlayer}'s Turn`, p.width / 2, 50);
+    p.text(labelText, p.width / 2, 50);
   }
 
   getOpponentBoard()
@@ -104,6 +105,8 @@ export class GameManager
 
   handleClick(x, y)
   {
+    if (this.state === "GAME_OVER") return;
+
     if (this.state === "SETUP")
     {
       this.handleSetupClick(x, y);
@@ -161,8 +164,13 @@ export class GameManager
       variant: isHit ? "success" : "danger"
     });
 
-    if(cell.ship.isSunk()) {
+    if(isHit && cell.ship.isSunk()) {
         this.toast.render({ message: "Ship is sunk", variant: "success" });
+
+        if(board.allShipsSunk()) {
+          this.state = "GAME_OVER";
+          return;
+        }
     }
 
     this.nextTurn();

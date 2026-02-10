@@ -35,7 +35,7 @@ export class Cell
         }
     }
 
-    render()
+    render(masked)
     {
         const p = this.p;
 
@@ -43,7 +43,7 @@ export class Cell
         p.stroke(2)
         p.rect(this.x, this.y, this.size, this.size)
 
-        if (this.ship)
+        if (this.ship && !masked)
         {
             p.fill(100)
             p.rect(this.x + (this.size - this.size / 1.5) / 2, this.y + (this.size - this.size / 1.5) / 2, this.size / 1.5, this.size / 1.5)

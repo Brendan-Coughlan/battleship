@@ -27,7 +27,7 @@ export class Board
     }
   }
 
-  render()
+  render(masked)
   {
     const p = this.p;
     let borderPixelSize = this.boardSize * this.cellSize;
@@ -38,7 +38,7 @@ export class Board
     {
       for (let row = 0; row < this.boardSize; row++)
       {
-        this.cells[col][row].render();
+        this.cells[col][row].render(masked);
       }
     }
 
@@ -129,5 +129,10 @@ export class Board
     }
 
     return null;
+  }
+
+  allShipsSunk()
+  {
+    return this.ships.every(ship => ship.isSunk());
   }
 }
