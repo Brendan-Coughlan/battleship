@@ -10,6 +10,7 @@ export const CONFIG = Object.freeze({
     },
     ui: {
         toastDelay: 2000,
+        resolvingTurnDelay: 2000,
         labelTextSize: 25,
         labelHeight: 50
     },

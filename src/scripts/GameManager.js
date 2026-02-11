@@ -35,6 +35,7 @@ export class GameManager {
     this.currentPlayer = 1;
     this.totalShips = null;
     this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
+    this.isResolvingTurn = false;
 
     const player1Board = new Board(
       p,
@@ -83,7 +84,7 @@ export class GameManager {
     this.setup();
   }
 
-  setup() {}
+  setup() { }
 
   render() {
     const p = this.p;
@@ -149,7 +150,7 @@ export class GameManager {
       this.handlePlayClick(x, y);
     }
   }
-
+  
   handleSetupClick(x, y) {
     const player = this.getCurrentPlayer();
     const board = this.boards[this.currentPlayer];
@@ -182,6 +183,9 @@ export class GameManager {
   }
 
   async handlePlayClick(x, y) {
+    if(this.isResolvingTurn) return;
+    this.isResolvingTurn = true;
+
     const board = this.getOpponentBoard();
     const cell = board.getCellAt(x, y);
     if (!cell || cell.state !== "EMPTY") return;
@@ -203,7 +207,7 @@ export class GameManager {
     }
 
     // wait for 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, CONFIG.ui.resolvingTurnDelay));
 
     if (this.state !== "GAME_OVER") {
       const res = await nextTurnWindow.render();
@@ -212,5 +216,6 @@ export class GameManager {
         this.nextTurn();
       }
     }
+    this.isResolvingTurn = false;
   }
 }
