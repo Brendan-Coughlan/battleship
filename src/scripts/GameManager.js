@@ -84,7 +84,7 @@ export class GameManager {
     this.setup();
   }
 
-  setup() {}
+  setup() { }
 
   render() {
     const p = this.p;
@@ -184,12 +184,12 @@ export class GameManager {
 
   async handlePlayClick(x, y) {
     if (this.isResolvingTurn) return;
-    this.isResolvingTurn = true;
 
     const board = this.getOpponentBoard();
     const cell = board.getCellAt(x, y);
     if (!cell || cell.state !== "EMPTY") return;
 
+    this.isResolvingTurn = true;
     const isHit = cell.fire();
 
     this.toast.render({
@@ -215,9 +215,12 @@ export class GameManager {
       const res = await nextTurnWindow.render();
       if (res.ok) {
         // player click confirm
+        this.isResolvingTurn = false;
         this.nextTurn();
       }
+      else {
+        this.state = "GAME_OVER";
+      }
     }
-    this.isResolvingTurn = false;
   }
 }
