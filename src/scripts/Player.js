@@ -13,12 +13,12 @@ export class Player {
    * Place a ship on player's own board.
    * @param {number} col
    * @param {number} row
-   * @param {number} shipId  (or ship index) - whatever your board.placeShip expects
+   * @param {number} shipLength the length of the ship
    * @param {"H"|"V"} direction the direction of the ship
    * @returns {boolean} placed
    */
-  placeShip(col, row, shipId, direction = "H") {
-    const placed = this.board.placeShip(col, row, shipId, direction);
+  placeShip(col, row, shipLength, direction = "H") {
+    const placed = this.board.placeShip(col, row, shipLength, direction);
     if (placed) this.shipsPlaced++;
     return placed;
   }

@@ -84,7 +84,7 @@ export class GameManager {
     this.setup();
   }
 
-  setup() { }
+  setup() {}
 
   render() {
     const p = this.p;
@@ -150,7 +150,7 @@ export class GameManager {
       this.handlePlayClick(x, y);
     }
   }
-  
+
   handleSetupClick(x, y) {
     const player = this.getCurrentPlayer();
     const board = this.boards[this.currentPlayer];
@@ -163,8 +163,8 @@ export class GameManager {
     //   this.shipsPlaced[this.currentPlayer] + 1,
     //   "H",
     // );
-    const shipId = player.shipsPlaced + 1;
-    const placed = player.placeShip(cell.col, cell.row, shipId, "H");
+    const nextShipLength = player.shipsPlaced + 1;
+    const placed = player.placeShip(cell.col, cell.row, nextShipLength, "H");
 
     if (!placed) return;
 
@@ -183,7 +183,7 @@ export class GameManager {
   }
 
   async handlePlayClick(x, y) {
-    if(this.isResolvingTurn) return;
+    if (this.isResolvingTurn) return;
     this.isResolvingTurn = true;
 
     const board = this.getOpponentBoard();
@@ -207,7 +207,9 @@ export class GameManager {
     }
 
     // wait for 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, CONFIG.ui.resolvingTurnDelay));
+    await new Promise((resolve) =>
+      setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+    );
 
     if (this.state !== "GAME_OVER") {
       const res = await nextTurnWindow.render();
