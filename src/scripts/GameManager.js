@@ -1,6 +1,7 @@
 import { CONFIG } from "./config.js";
 import { Board } from "./Board.js";
 import { Player } from "./Player.js";
+import { confirmWindow } from "./plugins/confirmWindow.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
@@ -18,6 +19,16 @@ const toast = toastsWindow({
   delay: CONFIG.ui.toastDelay,
 });
 
+const nextTurnWindow = confirmWindow({
+  title: "Next turn",
+  message:
+    "Please hand over device to the next player, and let him/her confirm",
+  yesText: "Confirm",
+  noText: "Cancel",
+  hidden: true,
+  hideTargets: "canvas",
+});
+
 export class GameManager {
   constructor(p) {
     this.p = p;
@@ -25,8 +36,20 @@ export class GameManager {
     this.totalShips = null;
     this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
 
-    const player1Board = new Board(p, p.width / 2 - CONFIG.board.separation, p.height / 2, CONFIG.board.size, CONFIG.board.cellSize);
-    const player2Board = new Board(p, p.width / 2 + CONFIG.board.separation, p.height / 2, CONFIG.board.size, CONFIG.board.cellSize);
+    const player1Board = new Board(
+      p,
+      p.width / 2 - CONFIG.board.separation,
+      p.height / 2,
+      CONFIG.board.size,
+      CONFIG.board.cellSize,
+    );
+    const player2Board = new Board(
+      p,
+      p.width / 2 + CONFIG.board.separation,
+      p.height / 2,
+      CONFIG.board.size,
+      CONFIG.board.cellSize,
+    );
 
     this.boards = {
       1: player1Board,
@@ -40,6 +63,7 @@ export class GameManager {
 
     this.popup = popup;
     this.toast = toast;
+    this.nextTurnWindow = nextTurnWindow;
   }
 
   // show popup in the beginning
@@ -86,18 +110,29 @@ export class GameManager {
     const p = this.p;
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(CONFIG.ui.labelTextSize);
-    p.fill(CONFIG.colors.text)
+    p.fill(CONFIG.colors.text);
     p.text(labelText, p.width / 2, CONFIG.ui.labelHeight);
   }
 
+  /**
+   * Get opponent board when the game is in play, so the player can only fire on opponent's board
+   * @returns {object} board instance
+   */
   getOpponentBoard() {
     return this.currentPlayer === 1 ? this.boards[2] : this.boards[1];
   }
 
+  /**
+   * Get current player instance
+   * @returns {object} player instance
+   */
   getCurrentPlayer() {
     return this.players[this.currentPlayer];
   }
 
+  /**
+   * switch current player for the next turn
+   */
   nextTurn() {
     this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
   }
@@ -146,7 +181,7 @@ export class GameManager {
     }
   }
 
-  handlePlayClick(x, y) {
+  async handlePlayClick(x, y) {
     const board = this.getOpponentBoard();
     const cell = board.getCellAt(x, y);
     if (!cell || cell.state !== "EMPTY") return;
@@ -167,6 +202,15 @@ export class GameManager {
       }
     }
 
-    this.nextTurn();
+    // wait for 2 seconds
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    if (this.state !== "GAME_OVER") {
+      const res = await nextTurnWindow.render();
+      if (res.ok) {
+        // player click confirm
+        this.nextTurn();
+      }
+    }
   }
 }

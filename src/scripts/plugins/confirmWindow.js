@@ -81,7 +81,11 @@ export function confirmWindow(options = {}) {
       const modalEl = wrapper.querySelector(".modal");
       const btnYes = wrapper.querySelector(".btn-primary");
 
-      const modal = new bootstrap.Modal(modalEl);
+      const modal = new bootstrap.Modal(modalEl, {
+        // user click outside of the window will not close the window
+        backdrop: "static",
+        keyboard: false,
+      });
 
       let resolved = false;
       const finish = (ok) => {
@@ -107,6 +111,29 @@ export function confirmWindow(options = {}) {
       });
 
       modal.show();
+
+      modalEl.addEventListener(
+        "mousedown",
+        (e) => {
+          // If they clicked the backdrop (outside window), swallow the event
+          if (e.target === modalEl) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        },
+        true,
+      );
+
+      modalEl.addEventListener(
+        "click",
+        (e) => {
+          if (e.target === modalEl) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        },
+        true,
+      );
     });
   }
 
