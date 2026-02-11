@@ -1,3 +1,4 @@
+import { CONFIG } from "./config.js";
 import { Board } from "./Board.js";
 import { Player } from "./Player.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
@@ -8,13 +9,13 @@ const popup = selNumWindow({
   message: "Select number of ships for each player",
   yesText: "Confirm",
   noText: "Cancel",
-  min: 1,
-  max: 5,
+  min: CONFIG.ships.minShips,
+  max: CONFIG.ships.maxShips,
 });
 
 const toast = toastsWindow({
   position: "top-center",
-  delay: 2000,
+  delay: CONFIG.ui.toastDelay,
 });
 
 export class GameManager {
@@ -24,8 +25,8 @@ export class GameManager {
     this.totalShips = null;
     this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
 
-    const player1Board = new Board(p, p.width / 2 - 400, p.height / 2, 10, 50);
-    const player2Board = new Board(p, p.width / 2 + 400, p.height / 2, 10, 50);
+    const player1Board = new Board(p, p.width / 2 - CONFIG.board.separation, p.height / 2, CONFIG.board.size, CONFIG.board.cellSize);
+    const player2Board = new Board(p, p.width / 2 + CONFIG.board.separation, p.height / 2, CONFIG.board.size, CONFIG.board.cellSize);
 
     this.boards = {
       1: player1Board,
@@ -65,7 +66,7 @@ export class GameManager {
 
     if (this.state === "INIT") return;
 
-    p.background(255);
+    p.background(CONFIG.colors.background);
     this.boards[1].render(this.currentPlayer == 2);
     this.boards[2].render(this.currentPlayer == 1);
     switch (this.state) {
@@ -84,8 +85,9 @@ export class GameManager {
   renderLabel(labelText) {
     const p = this.p;
     p.textAlign(p.CENTER, p.CENTER);
-    p.textSize(25);
-    p.text(labelText, p.width / 2, 50);
+    p.textSize(CONFIG.ui.labelTextSize);
+    p.fill(CONFIG.colors.text)
+    p.text(labelText, p.width / 2, CONFIG.ui.labelHeight);
   }
 
   getOpponentBoard() {

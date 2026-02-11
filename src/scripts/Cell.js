@@ -1,4 +1,4 @@
-import { Ship } from "./Ship.js";
+import { CONFIG } from "./config.js";
 
 export class Cell
 {
@@ -39,26 +39,25 @@ export class Cell
     {
         const p = this.p;
 
-        p.fill(255)
-        p.stroke(2)
+        p.fill(CONFIG.colors.gridInner)
+        p.stroke(CONFIG.colors.gridBorder)
+        p.strokeWeight(2)
         p.rect(this.x, this.y, this.size, this.size)
 
         if (this.ship && !masked)
         {
-            p.fill(100)
+            p.fill(CONFIG.colors.ship)
             p.rect(this.x + (this.size - this.size / 1.5) / 2, this.y + (this.size - this.size / 1.5) / 2, this.size / 1.5, this.size / 1.5)
         }
 
         switch (this.state)
         {
-            // Miss
             case "MISS":
-                p.fill(200)
+                p.fill(CONFIG.colors.miss)
                 p.ellipse(this.x + this.size / 2, this.y + this.size / 2, this.size / 2, this.size / 2)
                 break;
-            // Hit
             case "HIT":
-                p.fill(150, 50, 50)
+                p.fill(CONFIG.colors.hit)
                 p.ellipse(this.x + this.size / 2, this.y + this.size / 2, this.size / 2, this.size / 2)
                 break;
         }

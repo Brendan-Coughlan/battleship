@@ -1,4 +1,5 @@
 import { Cell } from "./Cell.js";
+import { CONFIG } from "./config.js";
 import { Ship } from "./Ship.js";
 
 export class Board
@@ -30,6 +31,7 @@ export class Board
   render(masked)
   {
     const p = this.p;
+
     let borderPixelSize = this.boardSize * this.cellSize;
     let startX = this.x - borderPixelSize / 2;
     let startY = this.y - borderPixelSize / 2;
@@ -45,7 +47,7 @@ export class Board
     p.push();
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(this.cellSize * 0.35);
-    p.fill(0);
+    p.fill(CONFIG.colors.text);
     p.noStroke();
 
     // column labels (A, B, C...)
