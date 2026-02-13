@@ -1,7 +1,8 @@
 export class Player {
   /**
-   * @param {number} id player ID
-   * @param {Board} board the player's own board
+   * Create a player with an ID and a board.
+   * @param {number} id - the player's ID (1 or 2)
+   * @param {Board} board - the player's own board
    */
   constructor(id, board) {
     this.id = id;

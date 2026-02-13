@@ -4,6 +4,14 @@ import { Ship } from "./Ship.js";
 
 export class Board
 {
+  /**
+   * Creates a new game board.
+   * @param {p5} p - p5 instance
+   * @param {number} x - center x position of the board
+   * @param {number} y - center y position of the board
+   * @param {number} boardSize - number of cells in one dimension (e.g. 10 for a 10x10 board)
+   * @param {number} cellSize - pixel size of each cell
+   */
   constructor(p, x, y, boardSize, cellSize)
   {
     this.p = p;
@@ -18,6 +26,7 @@ export class Board
     let startX = x - borderPixelSize / 2;
     let startY = y - borderPixelSize / 2;
 
+    // Initialize cells
     for (let col = 0; col < boardSize; col++)
     {
       this.cells[col] = [];
@@ -28,6 +37,10 @@ export class Board
     }
   }
 
+  /**
+   * Renders the board and its cells.
+   * @param {boolean} masked - if true, ships will not be rendered (used for opponent's board)
+   */
   render(masked)
   {
     const p = this.p;
@@ -50,7 +63,7 @@ export class Board
     p.fill(CONFIG.colors.text);
     p.noStroke();
 
-    // column labels (A, B, C...)
+    // Create column labels (A, B, C...)
     for (let col = 0; col < this.boardSize; col++)
     {
       const label = String.fromCharCode(65 + col); // A = 65
@@ -61,7 +74,7 @@ export class Board
       );
     }
 
-    // row labels (1, 2, 3...)
+    // Create row labels (1, 2, 3...)
     for (let row = 0; row < this.boardSize; row++)
     {
       const label = row + 1;
@@ -73,6 +86,14 @@ export class Board
     }
   }
 
+  /**
+   * Checks if a ship can be placed at the specified location and orientation.
+   * @param {*} col 
+   * @param {*} row 
+   * @param {*} length 
+   * @param {*} orientation 
+   * @returns 
+   */
   getCellsForPlacement(col, row, length, orientation)
   {
     const cells = [];
@@ -99,7 +120,14 @@ export class Board
     return cells;
   }
 
-
+  /**
+   * Attempts to place a ship on the board. Returns true if successful, false if placement is invalid.
+   * @param {*} col 
+   * @param {*} row 
+   * @param {*} length 
+   * @param {*} orientation 
+   * @returns {boolean}
+   */
   placeShip(col, row, length, orientation)
   {
     const cells = this.getCellsForPlacement(col, row, length, orientation);
@@ -112,7 +140,12 @@ export class Board
     return true;
   }
 
-
+  /**
+   * Returns the cell at the given pixel coordinates, or null if out of bounds.
+   * @param {*} px 
+   * @param {*} py 
+   * @returns {object|null} - The cell at the given coordinates, or null if out of bounds
+   */
   getCellAt(px, py)
   {
     const borderPixelSize = this.boardSize * this.cellSize;
@@ -133,6 +166,10 @@ export class Board
     return null;
   }
 
+  /**
+   * Checks if all ships on the board have been sunk.
+   * @returns {boolean} - True if all ships are sunk, false otherwise
+   */
   allShipsSunk()
   {
     return this.ships.every(ship => ship.isSunk());

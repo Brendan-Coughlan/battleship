@@ -1,5 +1,9 @@
 export class Ship
 {
+  /**
+   * create a ship with the given length
+   * @param {number} length - the length of the ship
+   */
   constructor(length)
   {
     this.length = length;
@@ -7,11 +11,18 @@ export class Ship
     this.cells = [];
   }
 
+  /**
+   * register a hit on the ship
+   */
   hit()
   {
     this.hits++;
   }
 
+  /**
+   * place the ship on the board by assigning it to the given cells
+   * @param {Cell[]} cells - the cells to place the ship on
+   */
   place(cells)
   {
     if (cells.length !== this.length)
@@ -28,7 +39,7 @@ export class Ship
 
   /**
   * determine whether the ship is sunk
-  * @returns true if the ship is sunk
+  * @returns {boolean} true if the ship is sunk
   */
   isSunk()
   {

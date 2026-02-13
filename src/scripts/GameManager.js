@@ -30,6 +30,10 @@ const nextTurnWindow = confirmWindow({
 });
 
 export class GameManager {
+  /**
+   * Initializes the game manager with the provided p5 instance, sets up the game state, and creates the player boards and UI components.
+   * @param {object} p - The p5 instance used for rendering and input handling
+   */
   constructor(p) {
     this.p = p;
     this.currentPlayer = 1;
@@ -37,6 +41,7 @@ export class GameManager {
     this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
     this.isResolvingTurn = false;
 
+    // Create player boards, positioned side by side with a separation defined in the config
     const player1Board = new Board(
       p,
       p.width / 2 - CONFIG.board.separation,
@@ -67,10 +72,12 @@ export class GameManager {
     this.nextTurnWindow = nextTurnWindow;
   }
 
-  // show popup in the beginning
-  // userChoice is an object records user click yes or no
-  // if click yes: {ok: true, value: x}
-  // if click return: {ok: false, value: 1}
+  /**
+   * Initializes the game by prompting the user to select the number of ships for each player.
+   * Sets the game state to "SETUP" if the user confirms, or keeps it at "INIT" if they cancel.
+   * This method is called once at the start of the game to set up the initial conditions.
+   * @async
+   */
   async init() {
     const userChoice = await this.popup.render();
 
@@ -81,11 +88,12 @@ export class GameManager {
 
     this.totalShips = userChoice.value;
     this.state = "SETUP";
-    this.setup();
   }
 
-  setup() { }
-
+  /**
+   * Renders the game state, including the boards and a label indicating the current phase of the game (setup, play, or game over).
+   * The label at the top of the screen updates based on the game state to provide context to the players.
+   */
   render() {
     const p = this.p;
 
@@ -107,6 +115,10 @@ export class GameManager {
     }
   }
 
+  /**
+   * Renders a label at the top of the screen indicating the current game state (e.g., which player's turn it is, or if the game is over).
+   * @param {string} labelText - The text to display in the label
+   */
   renderLabel(labelText) {
     const p = this.p;
     p.textAlign(p.CENTER, p.CENTER);
@@ -124,7 +136,7 @@ export class GameManager {
   }
 
   /**
-   * Get current player instance
+   * Gets current player instance
    * @returns {object} player instance
    */
   getCurrentPlayer() {
@@ -132,12 +144,20 @@ export class GameManager {
   }
 
   /**
-   * switch current player for the next turn
+   * Switches the current player to the other player.
+   * Called at the end of a turn to hand control to the next player.
    */
   nextTurn() {
     this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
   }
 
+  /**
+ * Routes mouse click input to the correct handler based on the current game state.
+ * Prevents invalid interactions (e.g., clicking after game over or during the wrong phase).
+ *
+ * @param {number} x - X coordinate of the click
+ * @param {number} y - Y coordinate of the click
+ */
   handleClick(x, y) {
     if (this.state === "GAME_OVER") return;
 
@@ -151,25 +171,25 @@ export class GameManager {
     }
   }
 
+  /*
+    * Handles ship placement during the setup phase.
+    * Validates the click location and attempts to place a ship of the appropriate length.
+    * Advances the game state to the next player's setup or starts the game if both players have placed their ships.
+    * @param {number x - X coordinate of the click
+    * @param {number} y - Y coordinate of the click
+    */
   handleSetupClick(x, y) {
     const player = this.getCurrentPlayer();
     const board = this.boards[this.currentPlayer];
     const cell = board.getCellAt(x, y);
     if (!cell) return;
 
-    // let placed = board.placeShip(
-    //   cell.col,
-    //   cell.row,
-    //   this.shipsPlaced[this.currentPlayer] + 1,
-    //   "H",
-    // );
     const nextShipLength = player.shipsPlaced + 1;
-    const placed = player.placeShip(cell.col, cell.row, nextShipLength, "H");
+    const placed = player.placeShip(cell.col, cell.row, nextShipLength, "V");
 
     if (!placed) return;
 
-    // this.shipsPlaced[this.currentPlayer]++;
-
+    // Check if the current player has placed all their ships. If so, either switch to the next player's setup or start the game.
     if (player.shipsPlaced >= this.totalShips) {
       if (this.currentPlayer === 1) {
         this.currentPlayer = 2;
@@ -182,6 +202,14 @@ export class GameManager {
     }
   }
 
+  /*
+    * Handles firing at the opponent's board during the play phase.
+    * Validates the click location and updates the game state based on hit/miss and sunk ships.
+    * Implements a delay to allow players to see the result before switching turns.
+    * @async
+    * @param {number} x - X coordinate of the click
+    * @param {number} y - Y coordinate of the click
+    */
   async handlePlayClick(x, y) {
     if (this.isResolvingTurn) return;
 
@@ -197,6 +225,7 @@ export class GameManager {
       variant: isHit ? "success" : "danger",
     });
 
+    // Check if the hit ship is sunk and if the game is over
     if (isHit && cell.ship.isSunk()) {
       this.toast.render({ message: "Ship is sunk", variant: "success" });
 
@@ -206,15 +235,16 @@ export class GameManager {
       }
     }
 
-    // wait for 2 seconds
+    // Delay before showing next turn prompt to allow players to see hit/miss result
     await new Promise((resolve) =>
       setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
     );
 
+    // Show next turn confirmation window
+    // If the current player confirms, switch turns. If they cancel, end the game.
     if (this.state !== "GAME_OVER") {
       const res = await nextTurnWindow.render();
       if (res.ok) {
-        // player click confirm
         this.isResolvingTurn = false;
         this.nextTurn();
       }
