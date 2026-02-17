@@ -1,21 +1,30 @@
 import { GameManager } from "./GameManager.js";
 
-const sketch = (p) => {
+const sketch = (p) =>
+{
   let gameManager;
 
-  p.setup = async () => {
+  p.setup = async () =>
+  {
     p.createCanvas(p.windowWidth, p.windowHeight);
 
     gameManager = new GameManager(p);
     await gameManager.init();
   };
 
-  p.draw = () => {
+  p.draw = () =>
+  {
     gameManager.render();
   };
 
-  p.mousePressed = () => {
+  p.mousePressed = () =>
+  {
     gameManager.handleClick(p.mouseX, p.mouseY)
+  };
+
+  p.mouseMoved = () =>
+  {
+    gameManager.handleMouseMove(p.mouseX, p.mouseY);
   };
 };
 

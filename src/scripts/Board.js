@@ -96,12 +96,19 @@ export class Board
    */
   getCellsForPlacement(col, row, length, orientation)
   {
+    const DIRECTIONS = {
+      N: { dc: 0, dr: -1 },
+      S: { dc: 0, dr: 1 },
+      E: { dc: 1, dr: 0 },
+      W: { dc: -1, dr: 0 },
+    };
+    const { dc, dr } = DIRECTIONS[orientation];
     const cells = [];
 
     for (let i = 0; i < length; i++)
     {
-      const c = orientation === "H" ? col + i : col;
-      const r = orientation === "V" ? row + i : row;
+      const c = col + dc * i;
+      const r = row + dr * i;
 
       if (
         c < 0 || c >= this.boardSize ||

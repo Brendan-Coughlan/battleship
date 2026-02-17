@@ -21,6 +21,7 @@ export const CONFIG = Object.freeze({
         hit: [150, 50, 50],
         miss: [200],
         ship: 100,
+        shipGhost: [0, 150, 255, 120],
         text: 0
     }
 });
