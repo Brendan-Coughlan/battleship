@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Battleship</title>
+    <link rel="stylesheet" href="../styles/homePage.css" />
+  </head>
+
+  <body>
+    <div class="card">
+      <div class="title-wrap">
+        <h1 class="title">BATTLESHIP</h1>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="playBtn">Local Play</button>
+        <button class="btn" id="rulesBtn">Rules</button>
+      </div>
+
+      <p class="hint github">
+        <a
+          href="https://github.com/Brendan-Coughlan/battleship"
+          target="_blank"
+          rel="noopener"
+        >
+          <!-- GitHub SVG icon -->
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 .5C5.65.5.5 5.66.5 12.03c0 5.1 3.29 9.42 7.86 10.95.57.1.78-.25.78-.55
+        0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68
+        -1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.03 1.77 2.7 1.26 3.36.96
+        .1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.29-5.25-5.73 0-1.27.46-2.3 1.2-3.11
+        -.12-.29-.52-1.46.11-3.04 0 0 .98-.32 3.2 1.19.93-.26 1.92-.39 2.9-.39.98 0
+        1.97.13 2.9.39 2.21-1.51 3.19-1.19 3.19-1.19.63 1.58.23 2.75.11 3.04.75.81
+        1.2 1.84 1.2 3.11 0 4.45-2.69 5.43-5.26 5.72.41.36.77 1.08.77 2.18 0 1.57
+        -.01 2.83-.01 3.21 0 .3.2.66.79.55A11.54 11.54 0 0 0 23.5 12.03C23.5 5.66
+        18.35.5 12 .5z"
+            />
+          </svg>
+        </a>
+      </p>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rulesTitle"
+      >
+        <div class="modal-header">
+          <h2 class="modal-title" id="rulesTitle">Rules</h2>
+          <button class="close" id="closeBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <ol class="rules">
+            <li>Select number of ships for each player.</li>
+            <li>Each player places ships on their board. Press "R" to rotate.</li>
+            <li>Players take turns choosing a cell to fire.</li>
+            <li>A hit damages a ship; a miss does nothing.</li>
+            <li>A ship is sunk when all its cells are hit.</li>
+            <li>The first player to sink all enemy ships wins.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <script src="../scripts/home/home.js"></script>
+  </body>
+</html>
