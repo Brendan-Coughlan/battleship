@@ -26,6 +26,11 @@ const sketch = (p) =>
   {
     gameManager.handleMouseMove(p.mouseX, p.mouseY);
   };
+
+  p.keyPressed = () =>
+  {
+    gameManager.handleKeyPress(p.key)
+  };
 };
 
 new p5(sketch);

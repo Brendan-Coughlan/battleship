@@ -23,5 +23,14 @@ export const CONFIG = Object.freeze({
         ship: 100,
         shipGhost: [0, 150, 255, 120],
         text: 0
+    },
+    controls: {
+        rotateShip: "r",
+        deleteShip: "x"
+    },
+    sfk: {
+        miss: "../sfx/miss.wav",
+        hit: "../sfx/hit.wav",
+        sunk: "../sfx/sunk.wav"
     }
 });
