@@ -1,6 +1,7 @@
 import { CONFIG } from "./config.js";
 import { Board } from "./Board.js";
 import { Player } from "./Player.js";
+import { Timer } from "./Timer.js";
 import { confirmWindow } from "./plugins/confirmWindow.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
@@ -9,7 +10,7 @@ const popup = selNumWindow({
   title: "Number of Ships",
   message: "Select number of ships for each player",
   yesText: "Confirm",
-  noText: "Cancel",
+  noText: "Return",
   min: CONFIG.ships.minShips,
   max: CONFIG.ships.maxShips,
 });
@@ -47,6 +48,14 @@ export class GameManager {
     this.ghostCells = [];
     this.hoveredCell = null;
     this.orientation = "N";
+
+    // Instantiate Timer
+    this.timer = new Timer(
+      p,
+      p.width / 2,
+      CONFIG.turnTimer.height,
+      CONFIG.turnTimer.seconds,
+    );
 
     // Create player boards, positioned side by side with a separation defined in the config
     const player1Board = new Board(
@@ -90,10 +99,20 @@ export class GameManager {
 
     if (!userChoice.ok) {
       this.state = "INIT";
+      // return to home page
+      window.history.back();
       return;
     }
 
     this.totalShips = userChoice.value;
+
+    window.addEventListener("keydown", (event) => {
+      // press SPACE to pause the timer
+      if (event.code === "Space") {
+        event.preventDefault(); // prevent page scroll
+        this.togglePause();
+      }
+    });
 
     this.state = "SETUP";
   }
@@ -112,19 +131,18 @@ export class GameManager {
       this.hoveredCell.col,
       this.hoveredCell.row,
       length,
-      this.orientation
+      this.orientation,
     );
 
     this.ghostCells = cells || [];
   }
-
 
   rotateShip() {
     const directions = ["N", "E", "S", "W"];
     const currentIndex = directions.indexOf(this.orientation);
 
     this.orientation = directions[(currentIndex + 1) % directions.length];
-    this.updateGhost()
+    this.updateGhost();
   }
 
   deleteShip() {
@@ -162,6 +180,13 @@ export class GameManager {
         break;
       case "PLAY":
         this.renderLabel(`Player ${this.currentPlayer}'s Turn`);
+        // make the timer "tick"
+        this.timer.render();
+
+        // if time up, handle it with a function
+        if (!this.isResolvingTurn && this.timer.isFinished()) {
+          this.handleTimeout();
+        }
         break;
       case "GAME_OVER":
         this.renderLabel("Game Over");
@@ -184,7 +209,6 @@ export class GameManager {
 
     p.pop();
   }
-
 
   /**
    * Renders a label at the top of the screen indicating the current game state (e.g., which player's turn it is, or if the game is over).
@@ -266,12 +290,12 @@ export class GameManager {
   }
 
   /*
-    * Handles ship placement during the setup phase.
-    * Validates the click location and attempts to place a ship of the appropriate length.
-    * Advances the game state to the next player's setup or starts the game if both players have placed their ships.
-    * @param {number x - X coordinate of the click
-    * @param {number} y - Y coordinate of the click
-    */
+   * Handles ship placement during the setup phase.
+   * Validates the click location and attempts to place a ship of the appropriate length.
+   * Advances the game state to the next player's setup or starts the game if both players have placed their ships.
+   * @param {number x - X coordinate of the click
+   * @param {number} y - Y coordinate of the click
+   */
   async handleSetupClick(x, y) {
     if (this.isResolvingTurn) return;
 
@@ -281,7 +305,12 @@ export class GameManager {
     if (!cell) return;
 
     const nextShipLength = player.shipsPlaced + 1;
-    const placed = player.placeShip(cell.col, cell.row, nextShipLength, this.orientation);
+    const placed = player.placeShip(
+      cell.col,
+      cell.row,
+      nextShipLength,
+      this.orientation,
+    );
 
     if (!placed) return;
 
@@ -291,16 +320,25 @@ export class GameManager {
       await new Promise((resolve) =>
         setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
       );
+      // pause timer when next turn window is about to render
+      this.timer.pause();
       const res = await nextTurnWindow.render();
       if (res.ok) {
         this.isResolvingTurn = false;
         if (this.currentPlayer === 1) {
           this.currentPlayer = 2;
-          this.toast.render({ message: "Player 2 place ships", variant: "info" });
+          this.toast.render({
+            message: "Player 2 place ships",
+            variant: "info",
+          });
         } else {
           this.state = "PLAY";
           this.currentPlayer = 1;
           this.toast.render({ message: "Battle begins!", variant: "success" });
+
+          // start turn timer
+          this.timer.reset(this.turnSeconds);
+          this.timer.resume();
         }
       }
       else {
@@ -362,10 +400,53 @@ export class GameManager {
       if (res.ok) {
         this.isResolvingTurn = false;
         this.nextTurn();
-      }
-      else {
+    
+        // reset timer for next player's turn
+        this.timer.reset(this.turnSeconds);
+        this.timer.resume();
+      } else {
         this.state = "GAME_OVER";
       }
+    }
+  }
+
+  /**
+   * Handle time is up for the turn timer
+   * When time is up, force next turn by calling next turn window
+   * @returns
+   */
+  async handleTimeout() {
+    if (this.isResolvingTurn) return;
+
+    this.isResolvingTurn = true;
+    this.timer.pause();
+
+    this.toast.render({ message: "Time up!", variant: "danger" });
+
+    const res = await this.nextTurnWindow.render();
+    if (res.ok) {
+      this.isResolvingTurn = false;
+      this.nextTurn();
+      this.timer.reset(this.turnSeconds);
+      this.timer.resume();
+    } else {
+      this.state = "GAME_OVER";
+    }
+  }
+
+  /**
+   * handle when the turn is paused or resumed
+   * @returns 
+   */
+  togglePause() {
+    if (this.state !== "PLAY") return;
+
+    if (this.timer.running) {
+      this.timer.pause();
+      this.toast.render({ message: "Paused", variant: "info" });
+    } else {
+      this.timer.resume();
+      this.toast.render({ message: "Resumed", variant: "success" });
     }
   }
 }
