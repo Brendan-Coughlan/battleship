@@ -1,0 +1,15 @@
+/* use homepage style as a base */
+
+.gameover-card {
+  padding-top: 60px;
+}
+
+.title {
+  /* red game over title */
+  color: #b00020;
+}
+
+.subtitle {
+  font-size: 20px;
+  font-weight: 600;
+}

@@ -95,6 +95,16 @@ export class GameManager {
    * @async
    */
   async init() {
+    // the number of minimum/maximum available ships chosen guard
+    if (
+      CONFIG.ships.minShips <= 0 ||
+      CONFIG.ships.maxShips > CONFIG.board.size
+    ) {
+      throw new Error(
+        "Invalid number of minnimum or/and maximum ships in configuration",
+      );
+    }
+
     const userChoice = await this.popup.render();
 
     if (!userChoice.ok) {
@@ -148,7 +158,7 @@ export class GameManager {
   deleteShip() {
     const p = this.p;
 
-    const board = this.boards[this.currentPlayer]
+    const board = this.boards[this.currentPlayer];
     const x = p.mouseX;
     const y = p.mouseY;
 
@@ -263,19 +273,18 @@ export class GameManager {
     const pressedKey = key.toLowerCase();
     if (pressedKey === CONFIG.controls.deleteShip) {
       this.deleteShip();
-    }
-    else if (pressedKey === CONFIG.controls.rotateShip) {
+    } else if (pressedKey === CONFIG.controls.rotateShip) {
       this.rotateShip();
     }
   }
 
   /**
- * Routes mouse click input to the correct handler based on the current game state.
- * Prevents invalid interactions (e.g., clicking after game over or during the wrong phase).
- *
- * @param {number} x - X coordinate of the click
- * @param {number} y - Y coordinate of the click
- */
+   * Routes mouse click input to the correct handler based on the current game state.
+   * Prevents invalid interactions (e.g., clicking after game over or during the wrong phase).
+   *
+   * @param {number} x - X coordinate of the click
+   * @param {number} y - Y coordinate of the click
+   */
   handleClick(x, y) {
     if (this.state === "GAME_OVER") return;
 
@@ -340,21 +349,20 @@ export class GameManager {
           this.timer.reset(this.turnSeconds);
           this.timer.resume();
         }
-      }
-      else {
+      } else {
         this.state = "GAME_OVER";
       }
     }
   }
 
   /*
-    * Handles firing at the opponent's board during the play phase.
-    * Validates the click location and updates the game state based on hit/miss and sunk ships.
-    * Implements a delay to allow players to see the result before switching turns.
-    * @async
-    * @param {number} x - X coordinate of the click
-    * @param {number} y - Y coordinate of the click
-    */
+   * Handles firing at the opponent's board during the play phase.
+   * Validates the click location and updates the game state based on hit/miss and sunk ships.
+   * Implements a delay to allow players to see the result before switching turns.
+   * @async
+   * @param {number} x - X coordinate of the click
+   * @param {number} y - Y coordinate of the click
+   */
   async handlePlayClick(x, y) {
     if (this.isResolvingTurn) return;
 
@@ -372,8 +380,7 @@ export class GameManager {
 
     if (isHit) {
       hitAudio.play();
-    }
-    else {
+    } else {
       missAudio.play();
     }
 
@@ -383,7 +390,7 @@ export class GameManager {
       sunkAudio.play();
 
       if (board.allShipsSunk()) {
-        this.state = "GAME_OVER";
+        this.handleGameOver(this.currentPlayer);
         return;
       }
     }
@@ -400,7 +407,7 @@ export class GameManager {
       if (res.ok) {
         this.isResolvingTurn = false;
         this.nextTurn();
-    
+
         // reset timer for next player's turn
         this.timer.reset(this.turnSeconds);
         this.timer.resume();
@@ -436,7 +443,7 @@ export class GameManager {
 
   /**
    * handle when the turn is paused or resumed
-   * @returns 
+   * @returns
    */
   togglePause() {
     if (this.state !== "PLAY") return;
@@ -448,5 +455,12 @@ export class GameManager {
       this.timer.resume();
       this.toast.render({ message: "Resumed", variant: "success" });
     }
+  }
+
+  async handleGameOver(winner) {
+    this.state = "GAME_OVER";
+    // wait for 2s before redirect to game over page
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    window.location.href = `gameOver.html?winner=${encodeURIComponent(winner)}`;
   }
 }
