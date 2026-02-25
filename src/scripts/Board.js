@@ -2,15 +2,19 @@ import { Cell } from "./Cell.js";
 import { CONFIG } from "./config.js";
 import { Ship } from "./Ship.js";
 
+/* =========================
+   Board
+========================= */
 export class Board
 {
   /**
    * Creates a new game board.
-   * @param {p5} p - p5 instance
-   * @param {number} x - center x position of the board
-   * @param {number} y - center y position of the board
-   * @param {number} boardSize - number of cells in one dimension (e.g. 10 for a 10x10 board)
-   * @param {number} cellSize - pixel size of each cell
+   *
+   * @param {p5} p - p5 instance used for rendering.
+   * @param {number} x - Center X position of the board (canvas space).
+   * @param {number} y - Center Y position of the board (canvas space).
+   * @param {number} boardSize - Number of cells per row/column (e.g., 10 for 10x10).
+   * @param {number} cellSize - Pixel size of each cell.
    */
   constructor(p, x, y, boardSize, cellSize)
   {
@@ -20,26 +24,36 @@ export class Board
     this.boardSize = boardSize;
     this.cellSize = cellSize;
     this.cells = [];
-    this.ships = []
+    this.ships = [];
 
     let borderPixelSize = boardSize * cellSize;
     let startX = x - borderPixelSize / 2;
     let startY = y - borderPixelSize / 2;
 
-    // Initialize cells
+    // Initialize grid cells
     for (let col = 0; col < boardSize; col++)
     {
       this.cells[col] = [];
+
       for (let row = 0; row < boardSize; row++)
       {
-        this.cells[col][row] = new Cell(p, col, row, startX + col * cellSize, startY + row * cellSize, cellSize);
+        this.cells[col][row] = new Cell(
+          p,
+          col,
+          row,
+          startX + col * cellSize,
+          startY + row * cellSize,
+          cellSize
+        );
       }
     }
   }
 
   /**
-   * Renders the board and its cells.
-   * @param {boolean} masked - if true, ships will not be rendered (used for opponent's board)
+   * Renders the board grid and coordinate labels.
+   *
+   * @param {boolean} masked - If true, ships will not be rendered (used for opponent board).
+   * @returns {void}
    */
   render(masked)
   {
@@ -63,10 +77,10 @@ export class Board
     p.fill(CONFIG.colors.text);
     p.noStroke();
 
-    // Create column labels (A, B, C...)
+    // Column labels (A, B, C, ...)
     for (let col = 0; col < this.boardSize; col++)
     {
-      const label = String.fromCharCode(65 + col); // A = 65
+      const label = String.fromCharCode(65 + col);
       p.text(
         label,
         startX + col * this.cellSize + this.cellSize / 2,
@@ -74,7 +88,7 @@ export class Board
       );
     }
 
-    // Create row labels (1, 2, 3...)
+    // Row labels (1, 2, 3, ...)
     for (let row = 0; row < this.boardSize; row++)
     {
       const label = row + 1;
@@ -84,17 +98,20 @@ export class Board
         startY + row * this.cellSize + this.cellSize / 2
       );
     }
+
+    p.pop();
   }
 
   /**
-   * Checks if a ship can be placed at the specified location and orientation.
-   * @param {*} col 
-   * @param {*} row 
-   * @param {*} length 
-   * @param {*} orientation 
-   * @returns 
+   * Determines whether a ship can be placed at a given position.
+   *
+   * @param {number} col - Starting column index.
+   * @param {number} row - Starting row index.
+   * @param {number} length - Length of the ship.
+   * @param {"N"|"S"|"E"|"W"} orientation - Direction of ship placement.
+   * @returns {Cell[]|null} Array of valid cells if placement is allowed, otherwise null.
    */
-  getCellsForPlacement(col, row, length, orientation)
+  getValidPlacementCells(col, row, length, orientation)
   {
     const DIRECTIONS = {
       N: { dc: 0, dr: -1 },
@@ -102,6 +119,7 @@ export class Board
       E: { dc: 1, dr: 0 },
       W: { dc: -1, dr: 0 },
     };
+
     const { dc, dr } = DIRECTIONS[orientation];
     const cells = [];
 
@@ -113,10 +131,7 @@ export class Board
       if (
         c < 0 || c >= this.boardSize ||
         r < 0 || r >= this.boardSize
-      )
-      {
-        return null;
-      }
+      ) return null;
 
       const cell = this.cells[c][r];
       if (cell.ship) return null;
@@ -128,30 +143,32 @@ export class Board
   }
 
   /**
-   * Attempts to place a ship on the board. Returns true if successful, false if placement is invalid.
-   * @param {*} col 
-   * @param {*} row 
-   * @param {*} length 
-   * @param {*} orientation 
-   * @returns {boolean}
+   * Attempts to place a ship on the board.
+   *
+   * @param {number} col - Starting column index.
+   * @param {number} row - Starting row index.
+   * @param {number} length - Length of the ship.
+   * @param {"N"|"S"|"E"|"W"} orientation - Direction of placement.
+   * @returns {Ship|false} The created ship if successful, otherwise false.
    */
   placeShip(col, row, length, orientation)
   {
-    const cells = this.getCellsForPlacement(col, row, length, orientation);
+    const cells = this.getValidPlacementCells(col, row, length, orientation);
     if (!cells) return false;
 
     const ship = new Ship(length);
-    ship.place(cells);
+    ship.placeOnCells(cells);
 
     this.ships.push(ship);
-    return true;
+    return ship;
   }
 
   /**
-   * Returns the cell at the given pixel coordinates, or null if out of bounds.
-   * @param {*} px 
-   * @param {*} py 
-   * @returns {object|null} - The cell at the given coordinates, or null if out of bounds
+   * Returns the cell at given pixel coordinates.
+   *
+   * @param {number} px - Pixel X coordinate (canvas space).
+   * @param {number} py - Pixel Y coordinate (canvas space).
+   * @returns {Cell|null} Cell instance if inside board, otherwise null.
    */
   getCellAt(px, py)
   {
@@ -174,8 +191,9 @@ export class Board
   }
 
   /**
-   * Checks if all ships on the board have been sunk.
-   * @returns {boolean} - True if all ships are sunk, false otherwise
+   * Checks whether all ships on this board have been sunk.
+   *
+   * @returns {boolean} True if every ship reports sunk.
    */
   allShipsSunk()
   {

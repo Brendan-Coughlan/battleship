@@ -1,18 +1,27 @@
+/* =========================
+   Ship
+========================= */
 export class Ship
 {
   /**
-   * create a ship with the given length
-   * @param {number} length - the length of the ship
+   * Creates a ship with the given length.
+   *
+   * @param {number} length - The number of cells this ship occupies.
    */
   constructor(length)
   {
     this.length = length;
     this.hits = 0;
+
     this.cells = [];
   }
 
   /**
-   * register a hit on the ship
+   * Registers a hit on the ship.
+   *
+   * Increases the internal hit counter by one.
+   *
+   * @returns {void}
    */
   hit()
   {
@@ -20,10 +29,15 @@ export class Ship
   }
 
   /**
-   * place the ship on the board by assigning it to the given cells
-   * @param {Cell[]} cells - the cells to place the ship on
+   * Places the ship onto specific board cells.
+   *
+   * Each provided cell will reference this ship.
+   *
+   * @param {import("./Cell.js").Cell[]} cells - Cells that the ship will occupy.
+   * @throws {Error} If the number of cells does not match ship length.
+   * @returns {void}
    */
-  place(cells)
+  placeOnCells(cells)
   {
     if (cells.length !== this.length)
     {
@@ -31,6 +45,7 @@ export class Ship
     }
 
     this.cells = cells;
+
     for (const cell of cells)
     {
       cell.ship = this;
@@ -38,9 +53,13 @@ export class Ship
   }
 
   /**
-  * determine whether the ship is sunk
-  * @returns {boolean} true if the ship is sunk
-  */
+   * Determines whether the ship has been sunk.
+   *
+   * A ship is sunk when its hit count is
+   * greater than or equal to its length.
+   *
+   * @returns {boolean} True if the ship is sunk.
+   */
   isSunk()
   {
     return this.hits >= this.length;

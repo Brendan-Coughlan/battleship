@@ -1,11 +1,18 @@
+/* =========================
+   Imports
+========================= */
 import { CONFIG } from "./config.js";
 import { Board } from "./Board.js";
 import { Player } from "./Player.js";
 import { Timer } from "./Timer.js";
+
 import { confirmWindow } from "./plugins/confirmWindow.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
+/* =========================
+   UI Windows & Audio
+========================= */
 const popup = selNumWindow({
   title: "Number of Ships",
   message: "Select number of ships for each player",
@@ -34,22 +41,26 @@ const missAudio = new Audio(CONFIG.sfk.miss);
 const hitAudio = new Audio(CONFIG.sfk.hit);
 const sunkAudio = new Audio(CONFIG.sfk.sunk);
 
+/* =========================
+   Game Manager
+========================= */
 export class GameManager {
   /**
-   * Initializes the game manager with the provided p5 instance, sets up the game state, and creates the player boards and UI components.
-   * @param {object} p - The p5 instance used for rendering and input handling
+   * Creates the game manager and initializes core systems.
+   * @param {object} p - The p5 instance used for rendering and input.
    */
   constructor(p) {
     this.p = p;
-    this.currentPlayer = 1;
-    this.totalShips = null;
-    this.state = "INIT"; // INIT | SETUP | PLAY | GAME_OVER
+
+    this.currentPlayerID = 1;
+    this.shipsPerPlayer = null;
+    this.gameState = "INIT";
     this.isResolvingTurn = false;
+
     this.ghostCells = [];
     this.hoveredCell = null;
     this.orientation = "N";
 
-    // Instantiate Timer
     this.timer = new Timer(
       p,
       p.width / 2,
@@ -57,7 +68,6 @@ export class GameManager {
       CONFIG.turnTimer.seconds,
     );
 
-    // Create player boards, positioned side by side with a separation defined in the config
     const player1Board = new Board(
       p,
       p.width / 2 - CONFIG.board.separation,
@@ -65,6 +75,7 @@ export class GameManager {
       CONFIG.board.size,
       CONFIG.board.cellSize,
     );
+
     const player2Board = new Board(
       p,
       p.width / 2 + CONFIG.board.separation,
@@ -72,11 +83,6 @@ export class GameManager {
       CONFIG.board.size,
       CONFIG.board.cellSize,
     );
-
-    this.boards = {
-      1: player1Board,
-      2: player2Board,
-    };
 
     this.players = {
       1: new Player(1, player1Board),
@@ -88,14 +94,16 @@ export class GameManager {
     this.nextTurnWindow = nextTurnWindow;
   }
 
+  /* =========================
+     Initialization
+  ========================= */
+
   /**
-   * Initializes the game by prompting the user to select the number of ships for each player.
-   * Sets the game state to "SETUP" if the user confirms, or keeps it at "INIT" if they cancel.
-   * This method is called once at the start of the game to set up the initial conditions.
-   * @async
+   * Prompts user for setup configuration and starts setup phase.
+   * @returns {Promise<void>}
    */
   async init() {
-    // the number of minimum/maximum available ships chosen guard
+    // guard: min/max ships must be valid
     if (
       CONFIG.ships.minShips <= 0 ||
       CONFIG.ships.maxShips > CONFIG.board.size
@@ -108,25 +116,74 @@ export class GameManager {
     const userChoice = await this.popup.render();
 
     if (!userChoice.ok) {
-      this.state = "INIT";
-      // return to home page
+      this.gameState = "INIT";
       window.history.back();
       return;
     }
 
-    this.totalShips = userChoice.value;
+    this.shipsPerPlayer = userChoice.value;
 
     window.addEventListener("keydown", (event) => {
-      // press SPACE to pause the timer
       if (event.code === "Space") {
-        event.preventDefault(); // prevent page scroll
+        event.preventDefault();
         this.togglePause();
       }
     });
 
-    this.state = "SETUP";
+    this.gameState = "SETUP";
   }
 
+  /* =========================
+     Player Helpers
+  ========================= */
+
+  /**
+   * Gets the current player instance.
+   * @returns {Player}
+   */
+  getCurrentPlayer() {
+    return this.players[this.currentPlayerID];
+  }
+
+  /**
+   * Gets the opponent player instance.
+   * @returns {Player}
+   */
+  getOpponentPlayer() {
+    const opponentID = this.currentPlayerID === 1 ? 2 : 1;
+    return this.players[opponentID];
+  }
+
+  /**
+   * Switches the current player.
+   * @returns {void}
+   */
+  nextTurn() {
+    this.currentPlayerID = this.currentPlayerID === 1 ? 2 : 1;
+  }
+
+  /* =========================
+     Ship Placement Helpers
+  ========================= */
+
+  /**
+   * Determines the next ship length to place.
+   * @returns {number|null}
+   */
+  getNextShipLength() {
+    const player = this.getCurrentPlayer();
+
+    for (let i = 1; i <= this.shipsPerPlayer; i++) {
+      if (!player.ships[i]) return i;
+    }
+
+    return null;
+  }
+
+  /**
+   * Updates ghost preview cells during placement.
+   * @returns {void}
+   */
   updateGhost() {
     if (!this.hoveredCell) {
       this.ghostCells = [];
@@ -134,10 +191,15 @@ export class GameManager {
     }
 
     const player = this.getCurrentPlayer();
-    const length = player.shipsPlaced + 1;
-    const board = this.boards[this.currentPlayer];
+    const board = player.board;
+    const length = this.getNextShipLength();
 
-    const cells = board.getCellsForPlacement(
+    if (!length) {
+      this.ghostCells = [];
+      return;
+    }
+
+    const cells = board.getValidPlacementCells(
       this.hoveredCell.col,
       this.hoveredCell.row,
       length,
@@ -147,6 +209,10 @@ export class GameManager {
     this.ghostCells = cells || [];
   }
 
+  /**
+   * Rotates the ship orientation.
+   * @returns {void}
+   */
   rotateShip() {
     const directions = ["N", "E", "S", "W"];
     const currentIndex = directions.indexOf(this.orientation);
@@ -155,55 +221,103 @@ export class GameManager {
     this.updateGhost();
   }
 
+  /**
+   * Deletes the ship at the mouse position.
+   * @returns {void}
+   */
   deleteShip() {
     const p = this.p;
 
-    const board = this.boards[this.currentPlayer];
+    const player = this.getCurrentPlayer();
+    const board = player.board;
+
     const x = p.mouseX;
     const y = p.mouseY;
 
     const cell = board.getCellAt(x, y);
-    if (!cell) return;
+    if (!cell || !cell.ship) return;
 
     const shipCells = cell.ship.cells;
-    for (const cell of shipCells) {
-      cell.ship = null;
+    for (const c of shipCells) {
+      c.ship = null;
     }
+
+    delete player.ships[shipCells.length];
   }
 
   /**
-   * Renders the game state, including the boards and a label indicating the current phase of the game (setup, play, or game over).
-   * The label at the top of the screen updates based on the game state to provide context to the players.
+   * Attempts to place a ship.
+   * @param {number} x - Mouse x position.
+   * @param {number} y - Mouse y position.
+   * @returns {boolean} Whether the ship was placed.
+   */
+  placeShip(x, y) {
+    const player = this.getCurrentPlayer();
+    const board = this.getCurrentPlayer().board;
+    const cell = board.getCellAt(x, y);
+
+    if (!cell) return false;
+
+    const length = this.getNextShipLength();
+    if (!length) return false;
+
+    const hasPlaced = player.placeShip(
+      cell.col,
+      cell.row,
+      length,
+      this.orientation,
+    );
+
+    console.log(player.ships);
+    return hasPlaced;
+  }
+
+  /* =========================
+   Rendering
+========================= */
+
+  /**
+   * Renders the game based on the current state.
+   * @returns {void}
    */
   render() {
     const p = this.p;
 
-    if (this.state === "INIT") return;
+    if (this.gameState === "INIT") return;
 
     p.background(CONFIG.colors.background);
-    this.boards[1].render(this.currentPlayer == 2);
-    this.boards[2].render(this.currentPlayer == 1);
-    switch (this.state) {
+
+    const player1Board = this.players[1].board;
+    const player2Board = this.players[2].board;
+
+    player1Board.render(this.currentPlayerID == 2);
+    player2Board.render(this.currentPlayerID == 1);
+
+    switch (this.gameState) {
       case "SETUP":
-        this.renderLabel(`Player ${this.currentPlayer}'s Setup`);
+        this.renderLabel(`Player ${this.currentPlayerID}'s Setup`);
         if (!this.isResolvingTurn) this.renderGhost();
         break;
+
       case "PLAY":
-        this.renderLabel(`Player ${this.currentPlayer}'s Turn`);
-        // make the timer "tick"
+        this.renderLabel(`Player ${this.currentPlayerID}'s Turn`);
         this.timer.render();
 
-        // if time up, handle it with a function
         if (!this.isResolvingTurn && this.timer.isFinished()) {
           this.handleTimeout();
         }
         break;
+
       case "GAME_OVER":
         this.renderLabel("Game Over");
         break;
     }
   }
 
+  /**
+   * Renders ghost preview cells during ship placement.
+   * @returns {void}
+   */
   renderGhost() {
     const p = this.p;
 
@@ -221,56 +335,51 @@ export class GameManager {
   }
 
   /**
-   * Renders a label at the top of the screen indicating the current game state (e.g., which player's turn it is, or if the game is over).
-   * @param {string} labelText - The text to display in the label
+   * Displays a label at the top of the screen.
+   * @param {string} labelText - Text to display.
+   * @returns {void}
    */
   renderLabel(labelText) {
     const p = this.p;
+
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(CONFIG.ui.labelTextSize);
     p.fill(CONFIG.colors.text);
     p.text(labelText, p.width / 2, CONFIG.ui.labelHeight);
   }
 
-  /**
-   * Get opponent board when the game is in play, so the player can only fire on opponent's board
-   * @returns {object} board instance
-   */
-  getOpponentBoard() {
-    return this.currentPlayer === 1 ? this.boards[2] : this.boards[1];
-  }
+  /* =========================
+     Input Handling
+  ========================= */
 
   /**
-   * Gets current player instance
-   * @returns {object} player instance
+   * Handles mouse movement during setup.
+   * @param {number} x - Mouse x position.
+   * @param {number} y - Mouse y position.
+   * @returns {void}
    */
-  getCurrentPlayer() {
-    return this.players[this.currentPlayer];
-  }
-
-  /**
-   * Switches the current player to the other player.
-   * Called at the end of a turn to hand control to the next player.
-   */
-  nextTurn() {
-    this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-  }
-
   handleMouseMove(x, y) {
-    if (this.state !== "SETUP") return;
+    if (this.gameState !== "SETUP") return;
 
-    const board = this.boards[this.currentPlayer];
+    const board = this.getCurrentPlayer().board;
     const cell = board.getCellAt(x, y);
 
-    this.hoveredCell = cell;
+    if (!cell) return;
 
+    this.hoveredCell = cell;
     this.updateGhost();
   }
 
+  /**
+   * Handles keyboard input.
+   * @param {string} key - Pressed key.
+   * @returns {void}
+   */
   handleKeyPress(key) {
-    if (this.state != "SETUP") return;
+    if (this.gameState != "SETUP") return;
 
     const pressedKey = key.toLowerCase();
+
     if (pressedKey === CONFIG.controls.deleteShip) {
       this.deleteShip();
     } else if (pressedKey === CONFIG.controls.rotateShip) {
@@ -279,98 +388,101 @@ export class GameManager {
   }
 
   /**
-   * Routes mouse click input to the correct handler based on the current game state.
-   * Prevents invalid interactions (e.g., clicking after game over or during the wrong phase).
-   *
-   * @param {number} x - X coordinate of the click
-   * @param {number} y - Y coordinate of the click
+   * Routes click events to the correct phase handler.
+   * @param {number} x - Mouse x position.
+   * @param {number} y - Mouse y position.
+   * @returns {void}
    */
   handleClick(x, y) {
-    if (this.state === "GAME_OVER") return;
+    if (this.gameState === "GAME_OVER") return;
 
-    if (this.state === "SETUP") {
+    if (this.gameState === "SETUP") {
       this.handleSetupClick(x, y);
       return;
     }
 
-    if (this.state === "PLAY") {
+    if (this.gameState === "PLAY") {
       this.handlePlayClick(x, y);
+      return;
     }
   }
 
-  /*
-   * Handles ship placement during the setup phase.
-   * Validates the click location and attempts to place a ship of the appropriate length.
-   * Advances the game state to the next player's setup or starts the game if both players have placed their ships.
-   * @param {number x - X coordinate of the click
-   * @param {number} y - Y coordinate of the click
+  /* =========================
+     Setup Phase
+  ========================= */
+
+  /**
+   * Handles ship placement during setup.
+   * @param {number} x - Mouse x position.
+   * @param {number} y - Mouse y position.
+   * @returns {Promise<void>}
    */
   async handleSetupClick(x, y) {
     if (this.isResolvingTurn) return;
 
     const player = this.getCurrentPlayer();
-    const board = this.boards[this.currentPlayer];
-    const cell = board.getCellAt(x, y);
-    if (!cell) return;
+    const hasPlaced = this.placeShip(x, y);
 
-    const nextShipLength = player.shipsPlaced + 1;
-    const placed = player.placeShip(
-      cell.col,
-      cell.row,
-      nextShipLength,
-      this.orientation,
-    );
+    if (!hasPlaced) return;
 
-    if (!placed) return;
-
-    // Check if the current player has placed all their ships. If so, either switch to the next player's setup or start the game.
-    if (player.shipsPlaced >= this.totalShips) {
+    if (Object.keys(player.ships).length >= this.shipsPerPlayer) {
       this.isResolvingTurn = true;
+      this.timer.pause();
+
       await new Promise((resolve) =>
         setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
       );
-      // pause timer when next turn window is about to render
-      this.timer.pause();
+
       const res = await nextTurnWindow.render();
+
       if (res.ok) {
         this.isResolvingTurn = false;
-        if (this.currentPlayer === 1) {
-          this.currentPlayer = 2;
+
+        if (this.currentPlayerID === 1) {
+          this.nextTurn();
+          this.ghostCells = [];
           this.toast.render({
             message: "Player 2 place ships",
             variant: "info",
           });
         } else {
-          this.state = "PLAY";
-          this.currentPlayer = 1;
-          this.toast.render({ message: "Battle begins!", variant: "success" });
+          this.gameState = "PLAY";
+          this.nextTurn();
+          this.toast.render({
+            message: "Battle begins!",
+            variant: "success",
+          });
 
-          // start turn timer
-          this.timer.reset(this.turnSeconds);
+          this.timer.reset(CONFIG.turnTimer.seconds);
           this.timer.resume();
         }
       } else {
-        this.state = "GAME_OVER";
+        this.gameState = "GAME_OVER";
       }
     }
   }
 
-  /*
-   * Handles firing at the opponent's board during the play phase.
-   * Validates the click location and updates the game state based on hit/miss and sunk ships.
-   * Implements a delay to allow players to see the result before switching turns.
-   * @async
-   * @param {number} x - X coordinate of the click
-   * @param {number} y - Y coordinate of the click
+  /* =========================
+     Play Phase
+  ========================= */
+
+  /**
+   * Handles firing at the opponent's board.
+   * @param {number} x - Mouse x position.
+   * @param {number} y - Mouse y position.
+   * @returns {Promise<void>}
    */
   async handlePlayClick(x, y) {
     if (this.isResolvingTurn) return;
 
-    const board = this.getOpponentBoard();
-    const cell = board.getCellAt(x, y);
+    const opponentPlayer = this.getOpponentPlayer();
+    const opponentBoard = opponentPlayer.board;
+    const cell = opponentBoard.getCellAt(x, y);
+
     if (!cell || cell.state !== "EMPTY") return;
 
     this.isResolvingTurn = true;
+
     const isHit = cell.fire();
 
     this.toast.render({
@@ -378,49 +490,54 @@ export class GameManager {
       variant: isHit ? "success" : "danger",
     });
 
-    if (isHit) {
-      hitAudio.play();
-    } else {
-      missAudio.play();
-    }
+    if (isHit) hitAudio.play();
+    else missAudio.play();
 
-    // Check if the hit ship is sunk and if the game is over
     if (isHit && cell.ship.isSunk()) {
       this.toast.render({ message: "Ship is sunk", variant: "success" });
       sunkAudio.play();
 
-      if (board.allShipsSunk()) {
-        this.handleGameOver(this.currentPlayer);
+      if (opponentBoard.allShipsSunk()) {
+        this.toast.render({
+          message:
+            this.currentPlayerID == 1 ? "Player 1 Wins!" : "Player 2 Wins!",
+          variant: "success",
+        });
+
+        await this.handleGameOver(this.currentPlayerID);
         return;
       }
     }
 
-    // Delay before showing next turn prompt to allow players to see hit/miss result
-    await new Promise((resolve) =>
-      setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
-    );
+    if (this.gameState !== "GAME_OVER") {
+      this.timer.pause();
 
-    // Show next turn confirmation window
-    // If the current player confirms, switch turns. If they cancel, end the game.
-    if (this.state !== "GAME_OVER") {
+      await new Promise((resolve) =>
+        setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+      );
+
       const res = await nextTurnWindow.render();
+
       if (res.ok) {
         this.isResolvingTurn = false;
         this.nextTurn();
 
         // reset timer for next player's turn
-        this.timer.reset(this.turnSeconds);
+        this.timer.reset(CONFIG.turnTimer.seconds);
         this.timer.resume();
       } else {
-        this.state = "GAME_OVER";
+        this.gameState = "GAME_OVER";
       }
     }
   }
 
+  /* =========================
+     Timer & Pause
+  ========================= */
+
   /**
-   * Handle time is up for the turn timer
-   * When time is up, force next turn by calling next turn window
-   * @returns
+   * Handles timeout when a player runs out of time.
+   * @returns {Promise<void>}
    */
   async handleTimeout() {
     if (this.isResolvingTurn) return;
@@ -431,22 +548,23 @@ export class GameManager {
     this.toast.render({ message: "Time up!", variant: "danger" });
 
     const res = await this.nextTurnWindow.render();
+
     if (res.ok) {
       this.isResolvingTurn = false;
       this.nextTurn();
-      this.timer.reset(this.turnSeconds);
+      this.timer.reset(CONFIG.turnTimer.seconds);
       this.timer.resume();
     } else {
-      this.state = "GAME_OVER";
+      this.gameState = "GAME_OVER";
     }
   }
 
   /**
-   * handle when the turn is paused or resumed
-   * @returns
+   * Toggles pause for the turn timer.
+   * @returns {void}
    */
   togglePause() {
-    if (this.state !== "PLAY") return;
+    if (this.gameState !== "PLAY") return;
 
     if (this.timer.running) {
       this.timer.pause();
@@ -458,9 +576,10 @@ export class GameManager {
   }
 
   async handleGameOver(winner) {
-    this.state = "GAME_OVER";
+    this.gameState = "GAME_OVER";
+    this.timer.pause();
     // wait for 2s before redirect to game over page
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     window.location.href = `gameOver.html?winner=${encodeURIComponent(winner)}`;
   }
 }
