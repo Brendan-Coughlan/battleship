@@ -1,43 +1,61 @@
-export class Player {
+/* =========================
+   Player
+========================= */
+export class Player
+{
   /**
-   * Create a player with an ID and a board.
-   * @param {number} id - the player's ID (1 or 2)
-   * @param {Board} board - the player's own board
+   * Creates a player instance.
+   * @param {number} id - Unique player ID (typically 1 or 2).
+   * @param {Board} board - The player's board instance.
    */
-  constructor(id, board) {
+  constructor(id, board)
+  {
     this.id = id;
     this.board = board;
-    this.shipsPlaced = 0;
+
+    this.ships = {};
   }
 
   /**
-   * Place a ship on player's own board.
-   * @param {number} col
-   * @param {number} row
-   * @param {number} shipLength the length of the ship
-   * @param {"H"|"V"} direction the direction of the ship
-   * @returns {boolean} placed
+   * Attempts to place a ship on the player's board.
+   *
+   * Delegates placement validation to the board.
+   * If successful, the ship is stored in the player's ship collection.
+   *
+   * @param {number} col - Column index on the board grid.
+   * @param {number} row - Row index on the board grid.
+   * @param {number} length - Length of the ship.
+   * @param {"N"|"E"|"S"|"W"} orientation - Direction the ship faces.
+   * @returns {boolean} True if the ship was successfully placed.
    */
-  placeShip(col, row, shipLength, direction = "H") {
-    const placed = this.board.placeShip(col, row, shipLength, direction);
-    if (placed) this.shipsPlaced++;
-    return placed;
+  placeShip(col, row, length, orientation)
+  {
+    const placedShip = this.board.placeShip(col, row, length, orientation);
+    if (!placedShip) return false;
+
+    this.ships[length] = placedShip;
+    return true;
   }
 
   /**
-   * Get a specific cell on player's board
-   * @param {*} x
-   * @param {*} y
-   * @returns
+   * Retrieves a cell from the player's board.
+   *
+   * @param {number} x - X coordinate in canvas space.
+   * @param {number} y - Y coordinate in canvas space.
+   * @returns {any} The board cell at the specified position.
    */
-  getCellAt(x, y) {
+  getCellAt(x, y)
+  {
     return this.board.getCellAt(x, y);
   }
 
   /**
-   * Check if all this player's ships are sunk (uses board method)
+   * Checks if all ships belonging to this player are sunk.
+   *
+   * @returns {boolean} True if all ships are destroyed.
    */
-  allShipsSunk() {
+  allShipsSunk()
+  {
     return this.board.allShipsSunk();
   }
 }

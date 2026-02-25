@@ -1,3 +1,6 @@
+/* =========================
+   Timer
+========================= */
 export class Timer {
   /**
    * Constructor of timer
