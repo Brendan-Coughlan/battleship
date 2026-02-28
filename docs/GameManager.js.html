@@ -1,4 +1,32 @@
-/*******************************************************************************************
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: GameManager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: GameManager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*******************************************************************************************
  * Program: GameManager.js
  * Description:
  *   Central class for managing the Battleship game. Handles:
@@ -40,7 +68,7 @@ import { selNumWindow } from "./plugins/selNumWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
 /* =========================
-   UI Windows & Audio
+   UI Windows &amp; Audio
 ========================= */
 const popup = selNumWindow({
   title: "Number of Ships",
@@ -130,7 +158,7 @@ export class GameManager {
 
   /**
    * Prompts user for setup configuration and starts setup phase.
-   * @returns {Promise<void>}
+   * @returns {Promise&lt;void>}
    */
   async init() {
     this.music = this.p.loadSound(CONFIG.sfx.background, () => {
@@ -152,7 +180,7 @@ export class GameManager {
 
     // guard: min/max ships must be valid
     if (
-      CONFIG.ships.minShips <= 0 ||
+      CONFIG.ships.minShips &lt;= 0 ||
       CONFIG.ships.maxShips > CONFIG.board.size
     ) {
       throw new Error(
@@ -189,7 +217,7 @@ export class GameManager {
    * @returns {void}
    */
   startMusic() {
-    if (this.music && !this.music.isPlaying()) this.music.play();
+    if (this.music &amp;&amp; !this.music.isPlaying()) this.music.play();
   }
 
   /**
@@ -231,7 +259,7 @@ export class GameManager {
    */
   areBothPlayersReady() {
     return (
-      Object.keys(this.players[1].ships).length === this.shipsPerPlayer &&
+      Object.keys(this.players[1].ships).length === this.shipsPerPlayer &amp;&amp;
       Object.keys(this.players[2].ships).length === this.shipsPerPlayer
     );
   }
@@ -264,7 +292,7 @@ export class GameManager {
   getNextShipLength() {
     const player = this.getCurrentPlayer();
 
-    for (let i = 1; i <= this.shipsPerPlayer; i++) {
+    for (let i = 1; i &lt;= this.shipsPerPlayer; i++) {
       if (!player.ships[i]) return i;
     }
 
@@ -331,7 +359,7 @@ export class GameManager {
         this.renderLabel(`Player ${this.currentPlayerID}'s Turn`);
         this.timer.render();
 
-        if (!this.isResolvingTurn && this.timer.isFinished()) {
+        if (!this.isResolvingTurn &amp;&amp; this.timer.isFinished()) {
           this.handleTimeout();
         }
         break;
@@ -458,7 +486,7 @@ export class GameManager {
    * Handles ship placement during setup.
    * @param {number} x - Mouse x position.
    * @param {number} y - Mouse y position.
-   * @returns {Promise<void>}
+   * @returns {Promise&lt;void>}
    */
   async handleSetupClick(x, y) {
     if (this.isResolvingTurn) return;
@@ -508,7 +536,7 @@ export class GameManager {
    * Handles firing at the opponent's board.
    * @param {number} x - Mouse x position.
    * @param {number} y - Mouse y position.
-   * @returns {Promise<void>}
+   * @returns {Promise&lt;void>}
    */
   async handlePlayClick(x, y) {
     if (this.isResolvingTurn) return;
@@ -531,7 +559,7 @@ export class GameManager {
     if (isHit) this.sfx.hit.play();
     else this.sfx.miss.play();
 
-    if (isHit && cell.ship.isSunk()) {
+    if (isHit &amp;&amp; cell.ship.isSunk()) {
       this.toast.render({ message: "Ship is sunk", variant: "success" });
       this.sfx.sunk.play();
 
@@ -570,12 +598,12 @@ export class GameManager {
   }
 
   /* =========================
-     Timer & Pause
+     Timer &amp; Pause
   ========================= */
 
   /**
    * Handles timeout when a player runs out of time.
-   * @returns {Promise<void>}
+   * @returns {Promise&lt;void>}
    */
   async handleTimeout() {
     if (this.isResolvingTurn) return;
@@ -622,3 +650,26 @@ export class GameManager {
     window.location.href = `gameOver.html?winner=${encodeURIComponent(winner)}`;
   }
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selNumWindow.html">plugins/selNumWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Feb 28 2026 17:31:12 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

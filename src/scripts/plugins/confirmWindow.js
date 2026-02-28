@@ -1,5 +1,6 @@
 /**
  * A confirmation window plugin
+ * @module plugins/confirmWindow
  * @param {*} options Default configuration of the confirmation window
  * @returns {object} object contains render function and getIsOpen function
  */
