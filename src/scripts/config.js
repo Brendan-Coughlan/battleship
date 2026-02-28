@@ -53,7 +53,11 @@ export const CONFIG = Object.freeze({
     rotateShip: "r",
     deleteShip: "x"
   },
-  sfk: {
+  sfx: {
+    backgroundVolume: 0.05,
+    interactionVolume: 0.25,
+    background: "../sfx/backgroundMusic.mp3",
+    click: "../sfx/click.wav",
     miss: "../sfx/miss.wav",
     hit: "../sfx/hit.wav",
     sunk: "../sfx/sunk.wav"

@@ -66,10 +66,6 @@ const nextTurnWindow = confirmWindow({
   hideTargets: "canvas",
 });
 
-const missAudio = new Audio(CONFIG.sfk.miss);
-const hitAudio = new Audio(CONFIG.sfk.hit);
-const sunkAudio = new Audio(CONFIG.sfk.sunk);
-
 /* =========================
    Game Manager
 ========================= */
@@ -82,6 +78,8 @@ export class GameManager
   constructor(p)
   {
     this.p = p;
+    this.music = null;
+    this.sfx = null;
 
     this.currentPlayerID = 1;
     this.shipsPerPlayer = null;
@@ -135,6 +133,24 @@ export class GameManager
    */
   async init()
   {
+    this.music = this.p.loadSound(CONFIG.sfx.background, () =>
+    {
+      this.music.setVolume(CONFIG.sfx.backgroundVolume);
+      this.music.setLoop(true);
+      this.startMusic();
+    });
+
+    this.sfx = {
+      click: this.p.loadSound(CONFIG.sfx.click),
+      hit: this.p.loadSound(CONFIG.sfx.hit),
+      miss: this.p.loadSound(CONFIG.sfx.miss),
+      sunk: this.p.loadSound(CONFIG.sfx.sunk)
+    };
+    this.sfx.click.setVolume(CONFIG.sfx.interactionVolume)
+    this.sfx.hit.setVolume(CONFIG.sfx.interactionVolume)
+    this.sfx.miss.setVolume(CONFIG.sfx.interactionVolume)
+    this.sfx.sunk.setVolume(CONFIG.sfx.interactionVolume)
+
     // guard: min/max ships must be valid
     if (
       CONFIG.ships.minShips <= 0 ||
@@ -172,6 +188,25 @@ export class GameManager
   /* =========================
      Player Helpers
   ========================= */
+
+  /**
+   * Plays background music if not already playing.
+   * @returns {void}
+   */
+  startMusic()
+  {
+    if (this.music && !this.music.isPlaying()) this.music.play();
+  }
+
+  /**
+   * Stops background music if it's playing.
+   * @returns {void}
+  */
+  stopMusic()
+  {
+    if (this.music) this.music.stop();
+  }
+
 
   /**
    * Gets the current player instance.
@@ -484,6 +519,8 @@ export class GameManager
   {
     if (this.gameState === "GAME_OVER") return;
 
+    this.sfx.click.play();
+
     if (this.gameState === "SETUP")
     {
       this.handleSetupClick(x, y);
@@ -574,13 +611,13 @@ export class GameManager
       variant: isHit ? "success" : "danger",
     });
 
-    if (isHit) hitAudio.play();
-    else missAudio.play();
+    if (isHit) this.sfx.hit.play();
+    else this.sfx.miss.play();
 
     if (isHit && cell.ship.isSunk())
     {
       this.toast.render({ message: "Ship is sunk", variant: "success" });
-      sunkAudio.play();
+      this.sfx.sunk.play();
 
       if (opponentBoard.allShipsSunk())
       {
@@ -673,6 +710,7 @@ export class GameManager
   async handleGameOver(winner)
   {
     this.gameState = "GAME_OVER";
+    this.stopMusic();
     this.timer.pause();
     // wait for 2s before redirect to game over page
     await new Promise((resolve) => setTimeout(resolve, 2000));
