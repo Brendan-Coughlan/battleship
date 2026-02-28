@@ -1,3 +1,31 @@
+/*******************************************************************************************
+ * Program: Cell.js
+ * Description:
+ *   Class representing a single cell on the Battleship game board. Each cell can contain a ship segment and tracks its own state (empty, hit, miss). Handles rendering itself based on its state and whether ships should be masked (hidden) or not.
+ *  - Contains methods for firing at the cell, which updates its state and interacts with any ship present.
+ *  - Renders itself visually on the canvas, showing hits, misses, and ships (if not masked).
+ *  - Used by the Board class to manage the grid of cells and by the GameManager for game logic related to firing and rendering.
+ *
+ * Inputs:
+ *   - p5 instance for rendering
+ *   - Column and row indices for grid positioning
+ *   - Pixel coordinates and size for rendering
+ *   - Method calls for firing and rendering with masking options
+ *
+ * Output:
+ *   - Visual representation of the cell on the game board, including hits, misses, and ships (if applicable)
+ *   - Updated state of the cell when fired upon, which affects game logic and ship status
+ *   - Interaction with the Ship class to track hits and determine if ships are sunk
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 import { CONFIG } from "./config.js";
 
 /* =========================

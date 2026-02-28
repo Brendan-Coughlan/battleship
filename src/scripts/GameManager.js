@@ -1,3 +1,32 @@
+/*******************************************************************************************
+ * Program: GameManager.js
+ * Description:
+ *   Central class for managing the Battleship game. Handles:
+ *     - Game states (INIT, SETUP, PLAY, GAME_OVER)
+ *     - Rendering of boards, labels, and UI elements
+ *     - Player turns and input handling
+ *     - Ship placement during setup
+ *     - Firing on opponent's board during gameplay
+ *     - Integration with popups, toasts, and timers
+ *
+ * Inputs:
+ *   - Mouse click coordinates for placing ships and firing
+ *   - Keyboard input (optional, e.g., for rotation)
+ *
+ * Output:
+ *   - Visual game board rendering on canvas
+ *   - Toast messages for hit/miss/sunk notifications
+ *   - Popups for player turn confirmation and ship placement
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 /* =========================
    Imports
 ========================= */

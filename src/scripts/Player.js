@@ -1,3 +1,30 @@
+/*******************************************************************************************
+ * Program: Player.js
+ * Description:
+ *   Represents a Battleship game player.
+ *   - Holds the player's board
+ *   - Stores all ships placed by the player
+ *   - Handles ship placement and retrieval of board cells
+ *   - Provides status checks (e.g., whether all ships are sunk)
+ *
+ * Inputs:
+ *   - Board instance to operate on
+ *   - Coordinates and ship placement information (col, row, length, orientation)
+ *
+ * Output:
+ *   - Ship placement results (success/failure)
+ *   - Board cell information
+ *   - Ship status information (all sunk or not)
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 /* =========================
    Player
 ========================= */

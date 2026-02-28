@@ -1,3 +1,29 @@
+/*******************************************************************************************
+ * Program: Timer.js
+ * Description:
+ *   Provides a countdown timer for the Battleship game.
+ *   - Tracks remaining time in seconds
+ *   - Supports start, pause, resume, and reset operations
+ *   - Can render the timer visually on the canvas
+ *
+ * Inputs:
+ *   - p5 instance for rendering and time calculations
+ *   - x, y coordinates to display the timer
+ *   - Countdown duration in seconds
+ *
+ * Output:
+ *   - Countdown display on canvas
+ *   - Timer state information (remaining time, finished or not)
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 /* =========================
    Timer
 ========================= */

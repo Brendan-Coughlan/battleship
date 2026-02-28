@@ -1,3 +1,26 @@
+/*******************************************************************************************
+ * Program: Ship.js
+ * Description:
+ *   This module defines the Ship class for the Battleship game. Each ship has a length, a hit count, and references to the cells it occupies on the game board. The class provides methods for registering hits, placing the ship on the board, and checking if the ship is sunk.
+ *
+ * Inputs:
+ *   - Ship length (number of cells the ship occupies)
+ *   - Cell references for ship placement
+ *   - Hit registration when a cell containing the ship is targeted
+ *
+ * Output:
+ *   - Updated hit count for the ship
+ *   - Status of the ship (sunk or not sunk)
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 /* =========================
    Ship
 ========================= */

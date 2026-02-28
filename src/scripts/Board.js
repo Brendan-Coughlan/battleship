@@ -1,3 +1,30 @@
+/*******************************************************************************************
+ * Program: Board.js
+ * Description:
+ *   Defines the Board class for the Battleship game, responsible for managing the grid of cells, ship placements, and rendering the game board.
+ *  - Initializes a grid of Cell instances based on specified dimensions.
+ *  - Provides methods for rendering the board, validating ship placements, and checking game state (e.g., all ships sunk).
+ *  - Handles coordinate conversions between pixel space and grid indices.
+ *
+ * Inputs:
+ *   - p5 instance for rendering
+ *   - Board position and dimensions for initialization
+ *   - Method parameters for ship placement and cell retrieval
+ *
+ * Output:
+ *   - Rendered game board with grid and coordinate labels
+ *   - Validated ship placements and updated cell states based on game actions
+ *   - Status of ships (sunk or not) for game logic decisions
+ *
+ * Collaborators:
+ *   - Brendan Coughlan
+ *   - Jiaxing Rong
+ *
+ * Creation Date: 2026-02-28
+ * Revision Dates:
+ *   - N/A
+ *******************************************************************************************/
+
 import { Cell } from "./Cell.js";
 import { CONFIG } from "./config.js";
 import { Ship } from "./Ship.js";
