@@ -34,6 +34,9 @@ This project follows an object-oriented design approach to ensure better maintai
 
 ## UML Diagram
 
+<p align="center">
+  <img src="assets/UML.png" width="1000">
+</p>
 
 
 ## Program Flow Control Diagram
