@@ -41,5 +41,6 @@ This project follows an object-oriented design approach to ensure better maintai
 
 ## Program Flow Control Diagram
 
-
-
+<p align="center">
+  <img src="assets/flowControlChart.png" width="1100">
+</p>
