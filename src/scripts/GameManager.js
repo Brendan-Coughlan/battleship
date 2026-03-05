@@ -34,6 +34,7 @@ import { CONFIG } from "./config.js";
 import { Board } from "./Board.js";
 import { Player } from "./Player.js";
 import { Timer } from "./Timer.js";
+import { Bot } from "./Bot.js";
 
 import { confirmWindow } from "./plugins/confirmWindow.js";
 import { selNumWindow } from "./plugins/selNumWindow.js";
@@ -118,6 +119,9 @@ export class GameManager {
       1: new Player(1, player1Board),
       2: new Player(2, player2Board),
     };
+
+    const bot = new Bot(this.players[2], "EASY");
+    console.log(bot.getFireLocation(this.players[1].board));
 
     this.popup = popup;
     this.toast = toast;
