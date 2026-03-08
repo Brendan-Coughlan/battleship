@@ -78,8 +78,9 @@ export class GameManager {
    * Creates the game manager and initializes core systems.
    * @param {object} p - The p5 instance used for rendering and input.
    */
-  constructor(p) {
+  constructor(p, mode) {
     this.p = p;
+    this.mode = mode; // local || ai
     this.music = null;
     this.sfx = null;
 
@@ -522,7 +523,7 @@ export class GameManager {
     this.isResolvingTurn = true;
 
     const { isHit, cell } = shot;
-    
+
     this.toast.render({
       message: isHit ? "Hit!" : "Miss!",
       variant: isHit ? "success" : "danger",
