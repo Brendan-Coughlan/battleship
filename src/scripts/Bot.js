@@ -4,12 +4,30 @@ export class Bot {
     this.difficulty = difficulty;
   }
 
-  getRandomCell(board) {
-    const randomX = Math.floor(Math.random() * board.boardSize);
-    const randomY = Math.floor(Math.random() * board.boardSize);
-    const randomCell = board.cells[randomX][randomY];
+  placeNextShip(length) {
+    const directions = ["N", "E", "S", "W"];
+    let placed = false;
 
-    return randomCell;
+    // loop until the bot place the ship successfully
+    while (!placed) {
+      const randomRow = Math.floor(Math.random() * this.player.board.boardSize);
+      const randomCol = Math.floor(Math.random() * this.player.board.boardSize);
+
+      const randomDirection =
+        directions[Math.floor(Math.random() * directions.length)];
+
+      this.player.setOrientation(randomDirection);
+
+      const targetCell = this.player.board.cells[randomRow][randomCol];
+
+      // Player class provides placeShipAt method with cell location and ship length parameters
+      // return true if placed a ship successfully
+      placed = this.player.placeShipAt(
+        targetCell.x + 1,   // +1 to avoid the bot clicking the border pixel
+        targetCell.y + 1,
+        length,
+      );
+    }
   }
 
   getFireLocation(opponentBoard) {
@@ -27,23 +45,6 @@ export class Bot {
             }
           }
         }
-    }
-  }
-
-  placeNextShip(length) {
-    const player = this.player;
-    const board = this.player.board;
-
-    let hasPlaced = false;
-    while (!hasPlaced) {
-      const randomX = Math.floor(Math.random() * board.boardSize);
-      const randomY = Math.floor(Math.random() * board.boardSize);
-
-      const orientations = ["N", "S", "E", "W"]
-      const randomOrientation = orientations[Math.floor(Math.random() * orientations.length)]
-      player.orientation = randomOrientation;
-
-      hasPlaced = player.placeShipAt(randomX, randomY, length);
     }
   }
 }
