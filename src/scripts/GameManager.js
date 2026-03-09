@@ -121,8 +121,11 @@ export class GameManager {
       2: new Player(2, player2Board),
     };
 
-    const bot = new Bot(this.players[2], "EASY");
-    console.log(bot.getFireLocation(this.players[1].board));
+    // const bot = new Bot(this.players[2], "EASY");
+    // console.log(bot.getFireLocation(this.players[1].board));
+
+    // if the mode is "ai", create a Bot object
+    this.bot = this.mode === "ai" ? new Bot(this.players[2], "EASY") : null;
 
     this.popup = popup;
     this.toast = toast;
@@ -183,6 +186,18 @@ export class GameManager {
     });
 
     this.gameState = "SETUP";
+  }
+
+  /* =========================
+     AI mode Helper
+  ========================= */
+
+  /**
+   * check if the mode is AI
+   * @returns {boolean} true if the mode is "ai", false otherwise
+   */
+  isAIMode() {
+    return this.mode === "ai";
   }
 
   /* =========================
@@ -485,6 +500,40 @@ export class GameManager {
     await new Promise((resolve) =>
       setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
     );
+
+    // AI mode
+    if (this.isAIMode()) {
+      // Bot places one ship right after player 1 places one ship
+
+      // Bot turn message
+      this.toast.render({
+        message: "Bot placing next ship...",
+        variant: "info",
+      });
+
+      // wait so user can see the message
+      await new Promise((resolve) =>
+        setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+      );
+
+      this.bot.placeNextShip(length);
+
+      // Player turn message
+      this.toast.render({
+        message: "Player place next ship",
+        variant: "info",
+      });
+
+      if (this.areBothPlayersReady()) {
+        this.isResolvingTurn = false;
+        this.startGame();
+      } else {
+        this.isResolvingTurn = false;
+      }
+      return;
+    }
+
+    // Local Mode
     const res = await nextTurnWindow.render();
 
     if (res.ok) {

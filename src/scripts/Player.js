@@ -131,6 +131,14 @@ export class Player {
   }
 
   /**
+   * Set current ship direction
+   * @param {string} "N", "E", "S", "W"
+   */
+  setOrientation(orientation) {
+    this.orientation = orientation;
+  }
+
+  /**
    * Retrieves a cell from the player's board.
    *
    * @param {number} x - X coordinate in canvas space.
