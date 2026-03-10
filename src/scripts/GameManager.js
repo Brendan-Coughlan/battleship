@@ -487,7 +487,11 @@ export class GameManager {
     const length = this.getNextShipLength();
     if (!length) return;
 
-    const hasPlaced = player.placeShipAt(x, y, length);
+    const cell = player.board.getCellAt(x, y);
+    if (!cell) return;
+    console.log("Placed");
+
+    const hasPlaced = player.placeShipAt(cell.col, cell.row, length);
 
     if (!hasPlaced) return;
 

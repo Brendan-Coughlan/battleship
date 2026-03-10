@@ -29,4 +29,21 @@ export class Bot {
         }
     }
   }
+
+  placeNextShip(length) {
+    const player = this.player;
+    const board = this.player.board;
+
+    let hasPlaced = false;
+    while (!hasPlaced) {
+      const randomX = Math.floor(Math.random() * board.boardSize);
+      const randomY = Math.floor(Math.random() * board.boardSize);
+
+      const orientations = ["N", "S", "E", "W"]
+      const randomOrientation = orientations[Math.floor(Math.random() * orientations.length)]
+      player.orientation = randomOrientation;
+
+      hasPlaced = player.placeShipAt(randomX, randomY, length);
+    }
+  }
 }

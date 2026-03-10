@@ -58,13 +58,11 @@ export class Player {
    * @param {number} length
    * @returns {boolean} true if placed successfully
    */
-  placeShipAt(x, y, length) {
-    const cell = this.board.getCellAt(x, y);
-    if (!cell) return false;
-
+  placeShipAt(col, row, length) {
+    
     const placedShip = this.board.placeShip(
-      cell.col,
-      cell.row,
+      col,
+      row,
       length,
       this.orientation,
     );
