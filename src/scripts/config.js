@@ -27,17 +27,17 @@ export const CONFIG = Object.freeze({
   board: {
     size: 10,
     cellSize: 50,
-    separation: 400
+    separation: 400,
   },
   ships: {
     minShips: 1,
-    maxShips: 5
+    maxShips: 5,
   },
   ui: {
     toastDelay: 2000,
     resolvingTurnDelay: 2000,
     labelTextSize: 25,
-    labelHeight: 50
+    labelHeight: 50,
   },
   colors: {
     background: 255,
@@ -47,11 +47,11 @@ export const CONFIG = Object.freeze({
     miss: [200],
     ship: 100,
     shipGhost: [0, 150, 255, 120],
-    text: 0
+    text: 0,
   },
   controls: {
     rotateShip: "r",
-    deleteShip: "x"
+    deleteShip: "x",
   },
   sfx: {
     backgroundVolume: 0.05,
@@ -60,10 +60,11 @@ export const CONFIG = Object.freeze({
     click: "../sfx/click.wav",
     miss: "../sfx/miss.wav",
     hit: "../sfx/hit.wav",
-    sunk: "../sfx/sunk.wav"
+    sunk: "../sfx/sunk.wav",
   },
   turnTimer: {
     seconds: 20,
     height: 450,
-  }
+  },
+  AIdifficultyLevel: ["EASY", "MEDIUM", "HARD"],
 });

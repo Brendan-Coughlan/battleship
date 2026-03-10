@@ -49,7 +49,7 @@ const numOptions = [];
 for (let i = CONFIG.ships.minShips; i <= CONFIG.ships.maxShips; i++) {
   numOptions.push(i);
 }
-
+// choose number of ships window
 const popup = selOptionWindow({
   title: "Number of Ships",
   message: "Select number of ships for each player",
@@ -130,8 +130,20 @@ export class GameManager {
     // const bot = new Bot(this.players[2], "EASY");
     // console.log(bot.getFireLocation(this.players[1].board));
 
-    // if the mode is "ai", create a Bot object
-    this.bot = this.mode === "ai" ? new Bot(this.players[2], "EASY") : null;
+    this.bot = null;
+    if (this.mode === "ai") {
+      // the mode is "ai",\
+      // create a Bot object
+      this.bot = new Bot(this.players[2], "EASY");
+      // create a difficulty selection window
+      this.difficultySelWindow = selOptionWindow({
+        title: "Difficulty Level",
+        message: "Select the difficulty level of the AI",
+        yesText: "Confirm",
+        noText: "Return",
+        options: CONFIG.AIdifficultyLevel,
+      });
+    }
 
     this.popup = popup;
     this.toast = toast;
@@ -172,6 +184,23 @@ export class GameManager {
       throw new Error(
         "Invalid number of minnimum or/and maximum ships in configuration",
       );
+    }
+
+    if (this.isAIMode()) {
+      // if in AI mode
+      // render difficulty selection window
+      const difficultyChoice = await this.difficultySelWindow.render();
+
+      if (!difficultyChoice.ok) {
+        this.gameState = "INIT";
+        window.history.back();
+        return;
+      }
+
+      this.bot = new Bot(this.players[2], difficultyChoice.value);
+
+      // difficultyChoice.value can access the level player choose
+      console.log(difficultyChoice.value);
     }
 
     const userChoice = await this.popup.render();
