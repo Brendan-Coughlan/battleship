@@ -120,8 +120,7 @@ export class GameManager {
       2: new Player(2, player2Board),
     };
 
-    const bot = new Bot(this.players[2], "EASY");
-    console.log(bot.getFireLocation(this.players[1].board));
+    const bot = new Bot(this.players[2], "HARD");
 
     this.popup = popup;
     this.toast = toast;
