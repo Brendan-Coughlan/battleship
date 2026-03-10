@@ -67,4 +67,13 @@ export const CONFIG = Object.freeze({
     height: 450,
   },
   AIdifficultyLevel: ["EASY", "MEDIUM", "HARD"],
+  boardFrame: {
+    activeBase: [0, 180, 255],
+    inactiveColor: "#ffff",
+    pulseSpeed: 0.08,
+    pulseMinAlpha: 120,
+    pulseMaxAlpha: 255,
+    strokeWeight: 4,
+    padding: 6,
+  },
 });

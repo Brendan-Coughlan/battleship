@@ -373,8 +373,43 @@ export class GameManager {
     const player1Board = this.players[1].board;
     const player2Board = this.players[2].board;
 
-    player1Board.render(this.currentPlayerID == 2);
-    player2Board.render(this.currentPlayerID == 1);
+    // compute the changing color
+    const pulse =
+      (Math.sin(this.p.frameCount * CONFIG.boardFrame.pulseSpeed) + 1) / 2;
+
+    const alpha =
+      CONFIG.boardFrame.pulseMinAlpha +
+      pulse *
+        (CONFIG.boardFrame.pulseMaxAlpha - CONFIG.boardFrame.pulseMinAlpha);
+
+    const activeColor = this.p.color(
+      CONFIG.boardFrame.activeBase[0],
+      CONFIG.boardFrame.activeBase[1],
+      CONFIG.boardFrame.activeBase[2],
+      alpha,
+    );
+
+    const inactiveColor = CONFIG.boardFrame.inactiveColor;
+
+    // decide which board should be highlighted
+    let highlightedBoardID = null;
+
+    if (this.gameState === "SETUP") {
+      // during ship placement, highlight current player's own board
+      highlightedBoardID = this.currentPlayerID;
+    } else if (this.gameState === "PLAY") {
+      // during firing, highlight opponent's board
+      highlightedBoardID = this.currentPlayerID === 1 ? 2 : 1;
+    }
+
+    player1Board.render(
+      this.currentPlayerID == 2,
+      highlightedBoardID === 1 ? activeColor : inactiveColor,
+    );
+    player2Board.render(
+      this.currentPlayerID == 1,
+      highlightedBoardID === 2 ? activeColor : inactiveColor,
+    );
 
     switch (this.gameState) {
       case "SETUP":
