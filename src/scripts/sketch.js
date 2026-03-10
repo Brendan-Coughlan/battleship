@@ -25,36 +25,35 @@
 
 import { GameManager } from "./GameManager.js";
 
-const sketch = (p) =>
-{
+const sketch = (p) => {
   let gameManager;
 
-  p.setup = async () =>
-  {
+  p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
 
-    gameManager = new GameManager(p);
+    // search the mode in the parameter of the URL
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    // console.log(mode);
+
+    gameManager = new GameManager(p, mode);
     await gameManager.init();
   };
 
-  p.draw = () =>
-  {
+  p.draw = () => {
     gameManager.render();
   };
 
-  p.mousePressed = () =>
-  {
-    gameManager.handleClick(p.mouseX, p.mouseY)
+  p.mousePressed = () => {
+    gameManager.handleClick(p.mouseX, p.mouseY);
   };
 
-  p.mouseMoved = () =>
-  {
+  p.mouseMoved = () => {
     gameManager.handleMouseMove(p.mouseX, p.mouseY);
   };
 
-  p.keyPressed = () =>
-  {
-    gameManager.handleKeyPress(p.key)
+  p.keyPressed = () => {
+    gameManager.handleKeyPress(p.key);
   };
 };
 
