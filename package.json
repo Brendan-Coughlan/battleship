@@ -18,9 +18,12 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "devDependencies": {
-    "jsdoc": "^4.0.5"
+    "jsdoc": "^4.0.5",
+    "webpack": "^5.105.3",
+    "webpack-cli": "^6.0.1"
   }
 }

@@ -37,19 +37,25 @@ import { Timer } from "./Timer.js";
 import { Bot } from "./Bot.js";
 
 import { confirmWindow } from "./plugins/confirmWindow.js";
-import { selNumWindow } from "./plugins/selNumWindow.js";
+import { selOptionWindow } from "./plugins/selOptionWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
 /* =========================
    UI Windows & Audio
 ========================= */
-const popup = selNumWindow({
+
+// number options when choosing the number of ships
+const numOptions = [];
+for (let i = CONFIG.ships.minShips; i <= CONFIG.ships.maxShips; i++) {
+  numOptions.push(i);
+}
+
+const popup = selOptionWindow({
   title: "Number of Ships",
   message: "Select number of ships for each player",
   yesText: "Confirm",
   noText: "Return",
-  min: CONFIG.ships.minShips,
-  max: CONFIG.ships.maxShips,
+  options: numOptions,
 });
 
 const toast = toastsWindow({
