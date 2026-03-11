@@ -37,19 +37,25 @@ import { Timer } from "./Timer.js";
 import { Bot } from "./Bot.js";
 
 import { confirmWindow } from "./plugins/confirmWindow.js";
-import { selNumWindow } from "./plugins/selNumWindow.js";
+import { selOptionWindow } from "./plugins/selOptionWindow.js";
 import { toastsWindow } from "./plugins/toastsWindow.js";
 
 /* =========================
    UI Windows & Audio
 ========================= */
-const popup = selNumWindow({
+
+// number options when choosing the number of ships
+const numOptions = [];
+for (let i = CONFIG.ships.minShips; i <= CONFIG.ships.maxShips; i++) {
+  numOptions.push(i);
+}
+// choose number of ships window
+const popup = selOptionWindow({
   title: "Number of Ships",
   message: "Select number of ships for each player",
   yesText: "Confirm",
   noText: "Return",
-  min: CONFIG.ships.minShips,
-  max: CONFIG.ships.maxShips,
+  options: numOptions,
 });
 
 const toast = toastsWindow({
@@ -124,8 +130,20 @@ export class GameManager {
     // const bot = new Bot(this.players[2], "EASY");
     // console.log(bot.getFireLocation(this.players[1].board));
 
-    // if the mode is "ai", create a Bot object
-    this.bot = this.mode === "ai" ? new Bot(this.players[2], "EASY") : null;
+    this.bot = null;
+    if (this.mode === "ai") {
+      // the mode is "ai",\
+      // create a Bot object
+      this.bot = new Bot(this.players[2], "EASY");
+      // create a difficulty selection window
+      this.difficultySelWindow = selOptionWindow({
+        title: "Difficulty Level",
+        message: "Select the difficulty level of the AI",
+        yesText: "Confirm",
+        noText: "Return",
+        options: CONFIG.AIdifficultyLevel,
+      });
+    }
 
     this.popup = popup;
     this.toast = toast;
@@ -166,6 +184,23 @@ export class GameManager {
       throw new Error(
         "Invalid number of minnimum or/and maximum ships in configuration",
       );
+    }
+
+    if (this.isAIMode()) {
+      // if in AI mode
+      // render difficulty selection window
+      const difficultyChoice = await this.difficultySelWindow.render();
+
+      if (!difficultyChoice.ok) {
+        this.gameState = "INIT";
+        window.history.back();
+        return;
+      }
+
+      this.bot = new Bot(this.players[2], difficultyChoice.value);
+
+      // difficultyChoice.value can access the level player choose
+      console.log(difficultyChoice.value);
     }
 
     const userChoice = await this.popup.render();
@@ -338,8 +373,43 @@ export class GameManager {
     const player1Board = this.players[1].board;
     const player2Board = this.players[2].board;
 
-    player1Board.render(this.currentPlayerID == 2);
-    player2Board.render(this.currentPlayerID == 1);
+    // compute the changing color
+    const pulse =
+      (Math.sin(this.p.frameCount * CONFIG.boardFrame.pulseSpeed) + 1) / 2;
+
+    const alpha =
+      CONFIG.boardFrame.pulseMinAlpha +
+      pulse *
+        (CONFIG.boardFrame.pulseMaxAlpha - CONFIG.boardFrame.pulseMinAlpha);
+
+    const activeColor = this.p.color(
+      CONFIG.boardFrame.activeBase[0],
+      CONFIG.boardFrame.activeBase[1],
+      CONFIG.boardFrame.activeBase[2],
+      alpha,
+    );
+
+    const inactiveColor = CONFIG.boardFrame.inactiveColor;
+
+    // decide which board should be highlighted
+    let highlightedBoardID = null;
+
+    if (this.gameState === "SETUP") {
+      // during ship placement, highlight current player's own board
+      highlightedBoardID = this.currentPlayerID;
+    } else if (this.gameState === "PLAY") {
+      // during firing, highlight opponent's board
+      highlightedBoardID = this.currentPlayerID === 1 ? 2 : 1;
+    }
+
+    player1Board.render(
+      this.currentPlayerID == 2,
+      highlightedBoardID === 1 ? activeColor : inactiveColor,
+    );
+    player2Board.render(
+      this.currentPlayerID == 1,
+      highlightedBoardID === 2 ? activeColor : inactiveColor,
+    );
 
     switch (this.gameState) {
       case "SETUP":
