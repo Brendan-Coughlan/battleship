@@ -43,10 +43,33 @@ export class Bot {
     return randomCell;
   }
 
-  getNextBestCell(opponentBoard, originalCell) {
-    if (originalCell.col != 0 && opponentBoard.cells[originalCell.col - 1][originalCell.row].state === "HIT") {
-      return opponentBoard.cells[originalCell.col - 1][originalCell.row];
+  getNextBestCell(board, cell) {
+    const directions = [
+      [0, -1], // N
+      [1, 0],  // E
+      [0, 1],  // S
+      [-1, 0], // W
+    ];
+
+    for (const [dx, dy] of directions) {
+      const newCol = cell.col + dx;
+      const newRow = cell.row + dy;
+
+      if (
+        newCol >= 0 &&
+        newCol < board.boardSize &&
+        newRow >= 0 &&
+        newRow < board.boardSize
+      ) {
+        const nextCell = board.cells[newCol][newRow];
+
+        if (nextCell.state === "EMPTY") {
+          return nextCell;
+        }
+      }
     }
+
+    return null;
   }
 
 
@@ -61,7 +84,7 @@ export class Bot {
         let targetCell = null;
         for (let col = 0; col < opponentBoard.boardSize; col++) {
           for (let row = 0; row < opponentBoard.boardSize; row++) {
-            if (opponentBoard.cells[col][row].state === HIT && !opponentBoard.cells[col][row].ship.isSunk()) {
+            if (opponentBoard.cells[col][row].state === "HIT" && !opponentBoard.cells[col][row].ship.isSunk()) {
               targetCell = opponentBoard.cells[col][row];
               break;
             }
@@ -69,7 +92,7 @@ export class Bot {
         }
 
         if (targetCell) {
-          const bestCell = getNextBestCell(opponentBoard, targetCell);
+          const bestCell = this.getNextBestCell(opponentBoard, targetCell);
           if (bestCell) {
             selectedCell = bestCell;
             break;
