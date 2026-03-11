@@ -78,21 +78,22 @@ export class Bot {
         selectedCell = this.getRandomCell(opponentBoard);
         break;
       case "HARD":
-        for (let col = 0; col < opponentBoard.boardSize; col++) {
+        let found = false;
+        for (let col = 0; col < opponentBoard.boardSize && !found; col++) {
           for (let row = 0; row < opponentBoard.boardSize; row++) {
-            if (opponentBoard.cells[col][row].ship) {
+            if (opponentBoard.cells[col][row].ship && opponentBoard.cells[col][row].state === "EMPTY") {
               const shipCell = opponentBoard.cells[col][row];
               selectedCell = shipCell;
+              found = true;
               break;
             }
           }
         }
+        break;
     }
 
     const selectedX = selectedCell.x + 1;
     const selectedY = selectedCell.y + 1;
-    console.log(selectedX)
-    console.log(selectedY)
     return { selectedX, selectedY };
   }
 }

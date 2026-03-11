@@ -380,7 +380,7 @@ export class GameManager {
     const alpha =
       CONFIG.boardFrame.pulseMinAlpha +
       pulse *
-        (CONFIG.boardFrame.pulseMaxAlpha - CONFIG.boardFrame.pulseMinAlpha);
+      (CONFIG.boardFrame.pulseMaxAlpha - CONFIG.boardFrame.pulseMinAlpha);
 
     const activeColor = this.p.color(
       CONFIG.boardFrame.activeBase[0],
@@ -694,13 +694,25 @@ export class GameManager {
         const shot = this.players[1].fireAt(selectedX, selectedY);
         const { isHit, cell } = shot;
 
+        if (isHit && cell.ship.isSunk()) {
+          if (opponentBoard.allShipsSunk()) {
+            this.toast.render({
+              message: "Player 2 Wins!",
+              variant: "success",
+            });
+
+            await this.handleGameOver(2);
+            return;
+          }
+        }
         // Player turn message
         this.toast.render({
           message: "Player plays next",
           variant: "info",
         });
         this.isResolvingTurn = false;
-
+        this.timer.reset(CONFIG.turnTimer.seconds);
+        this.timer.resume();
         return;
       }
 

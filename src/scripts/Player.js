@@ -87,7 +87,6 @@ export class Player {
     if (cell.state !== "EMPTY") return { ok: false };
 
     const isHit = cell.fire(); // your Cell.fire() already returns hit/miss
-    console.log(isHit)
     return { ok: true, isHit, cell };
   }
 
