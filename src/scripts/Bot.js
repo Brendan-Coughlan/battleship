@@ -30,21 +30,69 @@ export class Bot {
     }
   }
 
+  getRandomCell(board) {
+    let randomCell = null;
+    while (!randomCell) {
+      const randomX = Math.floor(Math.random() * board.boardSize);
+      const randomY = Math.floor(Math.random() * board.boardSize);
+      if (board.cells[randomX][randomY].state === "EMPTY") {
+        randomCell = board.cells[randomX][randomY];
+      }
+    }
+
+    return randomCell;
+  }
+
+  getNextBestCell(opponentBoard, originalCell) {
+    if (originalCell.col != 0 && opponentBoard.cells[originalCell.col - 1][originalCell.row].state === "HIT") {
+      return opponentBoard.cells[originalCell.col - 1][originalCell.row];
+    }
+  }
+
+
   getFireLocation(opponentBoard) {
-    const randomCell = this.getRandomCell(opponentBoard);
+    let selectedCell = null;
+
     switch (this.difficulty) {
       case "EASY":
-        return randomCell;
+        selectedCell = this.getRandomCell(opponentBoard);
+        break;
       case "MEDIUM":
-        return randomCell;
+        let targetCell = null;
+        for (let col = 0; col < opponentBoard.boardSize; col++) {
+          for (let row = 0; row < opponentBoard.boardSize; row++) {
+            if (opponentBoard.cells[col][row].state === HIT && !opponentBoard.cells[col][row].ship.isSunk()) {
+              targetCell = opponentBoard.cells[col][row];
+              break;
+            }
+          }
+        }
+
+        if (targetCell) {
+          const bestCell = getNextBestCell(opponentBoard, targetCell);
+          if (bestCell) {
+            selectedCell = bestCell;
+            break;
+          }
+        }
+        selectedCell = this.getRandomCell(opponentBoard);
+        break;
       case "HARD":
         for (let col = 0; col < opponentBoard.boardSize; col++) {
           for (let row = 0; row < opponentBoard.boardSize; row++) {
             if (opponentBoard.cells[col][row].ship) {
-              return opponentBoard.cells[col][row];
+              const shipCell = opponentBoard.cells[col][row];
+              selectedCell = shipCell;
+              break;
             }
           }
         }
     }
+
+    const selectedX = selectedCell.x + 1;
+    const selectedY = selectedCell.y + 1;
+    console.log(selectedX)
+    console.log(selectedY)
+    return { selectedX, selectedY };
   }
 }

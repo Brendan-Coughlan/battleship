@@ -524,11 +524,9 @@ export class GameManager {
         variant: "info",
       });
 
+      this.isResolvingTurn = false;
       if (this.areBothPlayersReady()) {
-        this.isResolvingTurn = false;
         this.startGame();
-      } else {
-        this.isResolvingTurn = false;
       }
       return;
     }
@@ -601,13 +599,42 @@ export class GameManager {
       }
     }
 
+    //AI Mode
     if (this.gameState !== "GAME_OVER") {
       this.timer.pause();
 
       await new Promise((resolve) =>
         setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
       );
+      if (this.isAIMode()) {
+        // Bot turn message
+        this.toast.render({
+          message: "Bot playing...",
+          variant: "info",
+        });
 
+        // wait so user can see the message
+        await new Promise((resolve) =>
+          setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+        );
+
+        const opponentBoard = this.players[1].board;
+        const { selectedX, selectedY } = this.bot.getFireLocation(opponentBoard);
+
+        const shot = this.players[1].fireAt(selectedX, selectedY);
+        const { isHit, cell } = shot;
+
+        // Player turn message
+        this.toast.render({
+          message: "Player plays next",
+          variant: "info",
+        });
+        this.isResolvingTurn = false;
+
+        return;
+      }
+
+      //Local Mode
       const res = await nextTurnWindow.render();
 
       if (res.ok) {
