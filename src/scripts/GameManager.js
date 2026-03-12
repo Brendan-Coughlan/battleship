@@ -633,13 +633,28 @@ export class GameManager {
    * @returns {Promise<void>}
    */
   async handlePlayClick(x, y) {
+    const played = await this.playLocalPlayer(x, y);
+    //AI Mode
+    if (played && this.gameState !== "GAME_OVER") {
+      this.timer.pause();
+      await new Promise((resolve) =>
+        setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+      );
+
+      if (this.isAIMode()) {
+        this.playBotPlayer();
+      }
+      else {
+        this.handleNextTurnWindow();
+      }
+    }
+  }
+
+  async playLocalPlayer(x, y) {
     if (this.isResolvingTurn) return;
 
-    const opponentPlayer = this.getOpponentPlayer();
-    const opponentBoard = opponentPlayer.board;
-
-    const shot = opponentPlayer.fireAt(x, y);
-    if (!shot.ok) return;
+    const shot = this.getOpponentPlayer().fireAt(x, y)
+    if (!shot.ok) return false;
 
     this.isResolvingTurn = true;
 
@@ -657,78 +672,75 @@ export class GameManager {
       this.toast.render({ message: "Ship is sunk", variant: "success" });
       this.sfx.sunk.play();
 
-      if (opponentBoard.allShipsSunk()) {
+      if (this.getOpponentPlayer().board.allShipsSunk()) {
         this.toast.render({
           message:
             this.currentPlayerID == 1 ? "Player 1 Wins!" : "Player 2 Wins!",
           variant: "success",
         });
-
         await this.handleGameOver(this.currentPlayerID);
-        return;
       }
     }
 
-    //AI Mode
-    if (this.gameState !== "GAME_OVER") {
-      this.timer.pause();
+    return true;
+  }
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
-      );
-      if (this.isAIMode()) {
-        // Bot turn message
+  async playBotPlayer() {
+    this.isResolvingTurn = true;
+
+    // Bot turn message
+    this.toast.render({
+      message: "Bot playing...",
+      variant: "info",
+    });
+
+    // wait so user can see the message
+    await new Promise((resolve) =>
+      setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+    );
+
+    const opponentBoard = this.players[1].board;
+    const { selectedX, selectedY } = this.bot.getFireLocation(opponentBoard);
+
+    const shot = this.players[1].fireAt(selectedX, selectedY);
+    const { isHit, cell } = shot;
+
+
+    if (isHit && cell.ship.isSunk()) {
+      if (opponentBoard.allShipsSunk()) {
         this.toast.render({
-          message: "Bot playing...",
-          variant: "info",
+          message: "Player 2 Wins!",
+          variant: "success",
         });
 
-        // wait so user can see the message
-        await new Promise((resolve) =>
-          setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
-        );
-
-        const opponentBoard = this.players[1].board;
-        const { selectedX, selectedY } = this.bot.getFireLocation(opponentBoard);
-
-        const shot = this.players[1].fireAt(selectedX, selectedY);
-        const { isHit, cell } = shot;
-
-        if (isHit && cell.ship.isSunk()) {
-          if (opponentBoard.allShipsSunk()) {
-            this.toast.render({
-              message: "Player 2 Wins!",
-              variant: "success",
-            });
-
-            await this.handleGameOver(2);
-            return;
-          }
-        }
-        // Player turn message
-        this.toast.render({
-          message: "Player plays next",
-          variant: "info",
-        });
-        this.isResolvingTurn = false;
-        this.timer.reset(CONFIG.turnTimer.seconds);
-        this.timer.resume();
-        return;
+        await this.handleGameOver(2);
       }
+    }
 
-      //Local Mode
-      const res = await nextTurnWindow.render();
+    // Player turn message
+    this.toast.render({
+      message: "Player plays next",
+      variant: "info",
+    });
 
-      if (res.ok) {
-        this.isResolvingTurn = false;
-        this.nextTurn();
+    this.isResolvingTurn = false;
 
-        // reset timer for next player's turn
-        this.timer.reset(CONFIG.turnTimer.seconds);
-        this.timer.resume();
-      } else {
-        this.gameState = "GAME_OVER";
-      }
+    this.timer.reset(CONFIG.turnTimer.seconds);
+    this.timer.resume();
+  }
+
+  async handleNextTurnWindow() {
+    const res = await nextTurnWindow.render();
+
+    if (res.ok) {
+      this.isResolvingTurn = false;
+      this.nextTurn();
+
+      // reset timer for next player's turn
+      this.timer.reset(CONFIG.turnTimer.seconds);
+      this.timer.resume();
+    } else {
+      this.gameState = "GAME_OVER";
     }
   }
 
@@ -745,19 +757,24 @@ export class GameManager {
 
     this.isResolvingTurn = true;
     this.timer.pause();
-
     this.toast.render({ message: "Time up!", variant: "danger" });
 
-    const res = await this.nextTurnWindow.render();
-
-    if (res.ok) {
-      this.isResolvingTurn = false;
-      this.nextTurn();
+    if (this.isAIMode()) {
+      await this.playBotPlayer();
       this.timer.reset(CONFIG.turnTimer.seconds);
       this.timer.resume();
     } else {
-      this.gameState = "GAME_OVER";
+      const res = await this.nextTurnWindow.render();
+
+      if (res.ok) {
+        this.nextTurn();
+        this.timer.reset(CONFIG.turnTimer.seconds);
+        this.timer.resume();
+      } else {
+        this.gameState = "GAME_OVER";
+      }
     }
+    this.isResolvingTurn = false;
   }
 
   /**
