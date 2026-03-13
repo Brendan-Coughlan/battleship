@@ -52,6 +52,8 @@ export const CONFIG = Object.freeze({
   controls: {
     rotateShip: "r",
     deleteShip: "x",
+    pauseGame: " ",
+    usePowerup: "p",
   },
   sfx: {
     backgroundVolume: 0.05,
