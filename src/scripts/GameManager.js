@@ -126,10 +126,7 @@ export class GameManager {
       1: new Player(1, player1Board),
       2: new Player(2, player2Board),
     };
-
-    // const bot = new Bot(this.players[2], "EASY");
-    // console.log(bot.getFireLocation(this.players[1].board));
-
+    
     this.bot = null;
     if (this.mode === "ai") {
       // the mode is "ai",\
@@ -316,9 +313,7 @@ export class GameManager {
    * Determines the next ship length to place.
    * @returns {number|null}
    */
-  getNextShipLength() {
-    const player = this.getCurrentPlayer();
-
+  getNextShipLength(player) {
     for (let i = 1; i <= this.shipsPerPlayer; i++) {
       if (!player.ships[i]) return i;
     }
@@ -338,7 +333,7 @@ export class GameManager {
 
     const player = this.getCurrentPlayer();
     const board = player.board;
-    const length = this.getNextShipLength();
+    const length = this.getNextShipLength(player);
 
     if (!length) {
       this.ghostCells = [];
@@ -551,57 +546,73 @@ export class GameManager {
    * @returns {Promise<void>}
    */
   async handleSetupClick(x, y) {
-    if (this.isResolvingTurn) return;
+    const played = await this.setupLocalPlayer(x, y)
 
-    const player = this.getCurrentPlayer();
-    const length = this.getNextShipLength();
-    if (!length) return;
+    // AI mode
+    if (played) {
+      if (this.isAIMode()) {
+        // Bot places one ship right after player 1 places one ship
+        this.setupBotPlayer();
+      }
+      else {
+        this.handleSetupNextTurnWindow();
+      }
+    }
+  }
 
-    const hasPlaced = player.placeShipAt(x, y, length);
+  async setupLocalPlayer(x, y) {
+    if (this.isResolvingTurn) return false;
 
-    if (!hasPlaced) return;
+    const length = this.getNextShipLength(this.getCurrentPlayer());
+    if (!length) return false;
+
+    const hasPlaced = this.getCurrentPlayer().placeShipAt(x, y, length);
+
+    if (!hasPlaced) return false;
+    this.isResolvingTurn = true;
 
     // reset ghost after placing
     this.ghostCells = [];
     this.hoveredCell = null;
 
-    this.isResolvingTurn = true;
-
     await new Promise((resolve) =>
       setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
     );
+    return true;
+  }
 
-    // AI mode
-    if (this.isAIMode()) {
-      // Bot places one ship right after player 1 places one ship
+  async setupBotPlayer() {
+    this.isResolvingTurn = true;
 
-      // Bot turn message
-      this.toast.render({
-        message: "Bot placing next ship...",
-        variant: "info",
-      });
+    // Bot turn message
+    this.toast.render({
+      message: "Bot placing next ship...",
+      variant: "info",
+    });
 
-      // wait so user can see the message
-      await new Promise((resolve) =>
-        setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
-      );
+    // wait so user can see the message
+    await new Promise((resolve) =>
+      setTimeout(resolve, CONFIG.ui.resolvingTurnDelay),
+    );
+    
+    const length = this.getNextShipLength(this.players[2]);
+    if (!length) return false;
 
-      this.bot.placeNextShip(length);
+    this.bot.placeNextShip(length);
 
-      // Player turn message
-      this.toast.render({
-        message: "Player place next ship",
-        variant: "info",
-      });
+    // Player turn message
+    this.toast.render({
+      message: "Player place next ship",
+      variant: "info",
+    });
 
-      this.isResolvingTurn = false;
-      if (this.areBothPlayersReady()) {
-        this.startGame();
-      }
-      return;
+    this.isResolvingTurn = false;
+    if (this.areBothPlayersReady()) {
+      this.startGame();
     }
+  }
 
-    // Local Mode
+  async handleSetupNextTurnWindow() {
     const res = await nextTurnWindow.render();
 
     if (res.ok) {
@@ -630,7 +641,6 @@ export class GameManager {
    * Handles firing at the opponent's board.
    * @param {number} x - Mouse x position.
    * @param {number} y - Mouse y position.
-   * @returns {Promise<void>}
    */
   async handlePlayClick(x, y) {
     const played = await this.playLocalPlayer(x, y);
@@ -645,13 +655,13 @@ export class GameManager {
         this.playBotPlayer();
       }
       else {
-        this.handleNextTurnWindow();
+        this.handlePlayNextTurnWindow();
       }
     }
   }
 
   async playLocalPlayer(x, y) {
-    if (this.isResolvingTurn) return;
+    if (this.isResolvingTurn) return false;
 
     const shot = this.getOpponentPlayer().fireAt(x, y)
     if (!shot.ok) return false;
@@ -729,7 +739,7 @@ export class GameManager {
     this.timer.resume();
   }
 
-  async handleNextTurnWindow() {
+  async handlePlayNextTurnWindow() {
     const res = await nextTurnWindow.render();
 
     if (res.ok) {
