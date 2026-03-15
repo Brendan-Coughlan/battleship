@@ -22,7 +22,7 @@
  *
  * Creation Date: 2026-02-28
  * Revision Dates:
- *   - N/A
+ *   - 3/15 added explosionFrames in constructor
  *******************************************************************************************/
 
 import { Cell } from "./Cell.js";
@@ -46,12 +46,13 @@ export class Board {
    * @param {number} boardSize - Number of cells per row/column (e.g., 10 for 10x10).
    * @param {number} cellSize - Pixel size of each cell.
    */
-  constructor(p, x, y, boardSize, cellSize) {
+  constructor(p, x, y, boardSize, cellSize, explosionFrames = []) {
     this.p = p;
     this.x = x;
     this.y = y;
     this.boardSize = boardSize;
     this.cellSize = cellSize;
+    this.explosionFrames = explosionFrames;
     this.cells = [];
     this.ships = [];
 
@@ -71,6 +72,7 @@ export class Board {
           startX + col * cellSize,
           startY + row * cellSize,
           cellSize,
+          explosionFrames,
         );
       }
     }

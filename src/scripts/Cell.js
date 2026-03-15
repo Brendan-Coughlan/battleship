@@ -23,7 +23,7 @@
  *
  * Creation Date: 2026-02-28
  * Revision Dates:
- *   - N/A
+ *   - 3/15 added explosion state, startExplosion and updateExplosion functions
  *******************************************************************************************/
 
 import { CONFIG } from "./config.js";
@@ -46,8 +46,9 @@ export class Cell {
    * @param {number} x - Pixel X position of the cell.
    * @param {number} y - Pixel Y position of the cell.
    * @param {number} size - Pixel width and height of the cell.
+   * @param {Array} explosionFrames - array contain a series of explosion frames
    */
-  constructor(p, col, row, x, y, size) {
+  constructor(p, col, row, x, y, size, explosionFrames) {
     this.p = p;
     this.col = col;
     this.row = row;
@@ -59,6 +60,17 @@ export class Cell {
 
     /** @type {"EMPTY" | "HIT" | "MISS"} */
     this.state = "EMPTY";
+
+    /* =========================
+       Explosion animation state
+    ========================= */
+
+    // keep track of which explosion frame should be shown
+    this.explosionFrames = explosionFrames;
+    this.explosionFrameIndex = 0;
+    this.explosionPlaying = false;
+    this.explosionFrameDelay = 6; // the number of frames the program wait before switching to the next frame
+    this.explosionFrameCounter = 0;
   }
 
   /**
@@ -77,10 +89,49 @@ export class Cell {
     if (this.ship) {
       this.state = "HIT";
       this.ship.hit();
+      // if hit, start explosion
+      this.startExplosion();
       return true;
     } else {
       this.state = "MISS";
       return false;
+    }
+  }
+
+  /**
+   * Starts the explosion animation.
+   *
+   * @returns {void}
+   */
+  startExplosion() {
+    // ensure explosion frames exists
+    if (!this.explosionFrames || this.explosionFrames.length === 0) return;
+    // init explosion state
+    this.explosionPlaying = true;
+    this.explosionFrameIndex = 0;
+    this.explosionFrameCounter = 0;
+  }
+
+  /**
+   * Updates the explosion animation.
+   *
+   * @returns {void}
+   */
+  updateExplosion() {
+    if (!this.explosionPlaying) return;
+    if (!this.explosionFrames || this.explosionFrames.length === 0) return;
+    // move the explosion sprite to the next one
+    this.explosionFrameCounter++;
+
+    if (this.explosionFrameCounter >= this.explosionFrameDelay) {
+      // when it reaches 4 frames, move to the next explosion frame image
+      this.explosionFrameCounter = 0;
+      this.explosionFrameIndex++;
+
+      if (this.explosionFrameIndex >= this.explosionFrames.length) {
+        this.explosionFrameIndex = this.explosionFrames.length - 1;
+        this.explosionPlaying = false;
+      }
     }
   }
 
@@ -125,13 +176,21 @@ export class Cell {
         break;
 
       case "HIT":
-        p.fill(CONFIG.colors.hit);
-        p.ellipse(
-          this.x + this.size / 2,
-          this.y + this.size / 2,
-          this.size / 2,
-          this.size / 2,
-        );
+        if (this.explosionFrames && this.explosionFrames.length > 0) {
+          this.updateExplosion();
+
+          const frame = this.explosionFrames[this.explosionFrameIndex];
+          p.image(frame, this.x, this.y, this.size, this.size);
+        } else {
+          // fallback if no sprite frames are provided
+          p.fill(CONFIG.colors.hit);
+          p.ellipse(
+            this.x + this.size / 2,
+            this.y + this.size / 2,
+            this.size / 2,
+            this.size / 2,
+          );
+        }
         break;
     }
   }

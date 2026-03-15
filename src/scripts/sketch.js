@@ -20,13 +20,21 @@
  *
  * Creation Date: 2026-02-28
  * Revision Dates:
- *   - N/A
+ *   - 3/15 added preload function to load explosion frames from assets
  *******************************************************************************************/
 
 import { GameManager } from "./GameManager.js";
 
 const sketch = (p) => {
   let gameManager;
+
+  const explosionFrames = [];
+  // load explosion frame
+  p.preload = () => {
+    for (let i = 0; i < 7; i++) {
+      explosionFrames.push(p.loadImage(`../../assets/sprites/explosion/${i+1}.png`));
+    }
+  };
 
   p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
@@ -36,7 +44,7 @@ const sketch = (p) => {
     const mode = params.get("mode");
     // console.log(mode);
 
-    gameManager = new GameManager(p, mode);
+    gameManager = new GameManager(p, mode, explosionFrames);
     await gameManager.init();
   };
 
