@@ -1,15 +1,105 @@
-export class Bot {
-  constructor(player, difficulty) {
+export class Bot
+{
+  constructor(player, difficulty)
+  {
     this.player = player;
     this.difficulty = difficulty;
   }
 
-  placeNextShip(length) {
+  getSmartTarget(board)
+  {
+    const hits = [];
+
+    // Collect all valid HIT cells (not sunk)
+    for (let col = 0; col < board.boardSize; col++)
+    {
+      for (let row = 0; row < board.boardSize; row++)
+      {
+        const cell = board.cells[col][row];
+        if (cell.state === "HIT" && !cell.ship.isSunk())
+        {
+          hits.push(cell);
+        }
+      }
+    }
+
+    if (hits.length === 0) return null;
+
+    // Try to detect direction (horizontal or vertical)
+    if (hits.length >= 2)
+    {
+      for (let i = 0; i < hits.length; i++)
+      {
+        for (let j = i + 1; j < hits.length; j++)
+        {
+          const a = hits[i];
+          const b = hits[j];
+
+          // SAME ROW → horizontal ship
+          if (a.row === b.row)
+          {
+            const row = a.row;
+            const cols = hits
+              .filter(c => c.row === row)
+              .map(c => c.col)
+              .sort((a, b) => a - b);
+
+            const left = cols[0] - 1;
+            const right = cols[cols.length - 1] + 1;
+
+            if (left >= 0)
+            {
+              const cell = board.cells[left][row];
+              if (cell.state === "EMPTY") return cell;
+            }
+
+            if (right < board.boardSize)
+            {
+              const cell = board.cells[right][row];
+              if (cell.state === "EMPTY") return cell;
+            }
+          }
+
+          // SAME COLUMN → vertical ship
+          if (a.col === b.col)
+          {
+            const col = a.col;
+            const rows = hits
+              .filter(c => c.col === col)
+              .map(c => c.row)
+              .sort((a, b) => a - b);
+
+            const up = rows[0] - 1;
+            const down = rows[rows.length - 1] + 1;
+
+            if (up >= 0)
+            {
+              const cell = board.cells[col][up];
+              if (cell.state === "EMPTY") return cell;
+            }
+
+            if (down < board.boardSize)
+            {
+              const cell = board.cells[col][down];
+              if (cell.state === "EMPTY") return cell;
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback: just probe around first hit
+    return this.getNextBestCell(board, hits[0]);
+  }
+
+  placeNextShip(length)
+  {
     const directions = ["N", "E", "S", "W"];
     let placed = false;
 
     // loop until the bot place the ship successfully
-    while (!placed) {
+    while (!placed)
+    {
       const randomRow = Math.floor(Math.random() * this.player.board.boardSize);
       const randomCol = Math.floor(Math.random() * this.player.board.boardSize);
 
@@ -30,12 +120,15 @@ export class Bot {
     }
   }
 
-  getRandomCell(board) {
+  getRandomCell(board)
+  {
     let randomCell = null;
-    while (!randomCell) {
+    while (!randomCell)
+    {
       const randomX = Math.floor(Math.random() * board.boardSize);
       const randomY = Math.floor(Math.random() * board.boardSize);
-      if (board.cells[randomX][randomY].state === "EMPTY") {
+      if (board.cells[randomX][randomY].state === "EMPTY")
+      {
         randomCell = board.cells[randomX][randomY];
       }
     }
@@ -43,7 +136,8 @@ export class Bot {
     return randomCell;
   }
 
-  getNextBestCell(board, cell) {
+  getNextBestCell(board, cell)
+  {
     const directions = [
       [0, -1], // N
       [1, 0],  // E
@@ -51,7 +145,8 @@ export class Bot {
       [-1, 0], // W
     ];
 
-    for (const [dx, dy] of directions) {
+    for (const [dx, dy] of directions)
+    {
       const newCol = cell.col + dx;
       const newRow = cell.row + dy;
 
@@ -60,10 +155,12 @@ export class Bot {
         newCol < board.boardSize &&
         newRow >= 0 &&
         newRow < board.boardSize
-      ) {
+      )
+      {
         const nextCell = board.cells[newCol][newRow];
 
-        if (nextCell.state === "EMPTY") {
+        if (nextCell.state === "EMPTY")
+        {
           return nextCell;
         }
       }
@@ -73,38 +170,34 @@ export class Bot {
   }
 
 
-  getFireLocation(opponentBoard) {
+  getFireLocation(opponentBoard)
+  {
     let selectedCell = null;
 
-    switch (this.difficulty) {
+    switch (this.difficulty)
+    {
       case "EASY":
         selectedCell = this.getRandomCell(opponentBoard);
         break;
       case "MEDIUM":
-        let targetCell = null;
-        for (let col = 0; col < opponentBoard.boardSize; col++) {
-          for (let row = 0; row < opponentBoard.boardSize; row++) {
-            if (opponentBoard.cells[col][row].state === "HIT" && !opponentBoard.cells[col][row].ship.isSunk()) {
-              targetCell = opponentBoard.cells[col][row];
-              break;
-            }
-          }
-        }
+        const smartCell = this.getSmartTarget(opponentBoard);
 
-        if (targetCell) {
-          const bestCell = this.getNextBestCell(opponentBoard, targetCell);
-          if (bestCell) {
-            selectedCell = bestCell;
-            break;
-          }
+        if (smartCell)
+        {
+          selectedCell = smartCell;
+        } else
+        {
+          selectedCell = this.getRandomCell(opponentBoard);
         }
-        selectedCell = this.getRandomCell(opponentBoard);
         break;
       case "HARD":
         let found = false;
-        for (let col = 0; col < opponentBoard.boardSize && !found; col++) {
-          for (let row = 0; row < opponentBoard.boardSize; row++) {
-            if (opponentBoard.cells[col][row].ship && opponentBoard.cells[col][row].state === "EMPTY") {
+        for (let col = 0; col < opponentBoard.boardSize && !found; col++)
+        {
+          for (let row = 0; row < opponentBoard.boardSize; row++)
+          {
+            if (opponentBoard.cells[col][row].ship && opponentBoard.cells[col][row].state === "EMPTY")
+            {
               const shipCell = opponentBoard.cells[col][row];
               selectedCell = shipCell;
               found = true;
