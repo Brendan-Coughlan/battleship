@@ -133,7 +133,7 @@ export class Board {
     // 3. draw hit/miss/explosion on top
     for (let col = 0; col < this.boardSize; col++) {
       for (let row = 0; row < this.boardSize; row++) {
-        this.cells[col][row].renderOverlay();
+        this.cells[col][row].renderOverlay(masked);
       }
     }
 

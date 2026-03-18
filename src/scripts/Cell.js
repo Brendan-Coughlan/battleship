@@ -211,9 +211,11 @@ export class Cell {
 
   /**
    * Renders the overlay elements of the cell
+   *
+   * @param {boolean} masked - Whether this board is masked (opponent board).
    * @returns {void}
    */
-  renderOverlay() {
+  renderOverlay(masked) {
     const p = this.p;
 
     switch (this.state) {
@@ -228,17 +230,27 @@ export class Cell {
         break;
 
       case "HIT":
+        // Only on the opponent board:
+        // if the ship is sunk, hide hit/explosion overlay
+        // so only the full ship sprite is shown.
+        const isSunk = this.ship && this.ship.isSunk();
+        const explosionFinished =
+          !this.explosionPlaying &&
+          this.explosionFrameIndex === this.explosionFrames.length - 1;
+
+        // Only hide explosion AFTER it finishes
+        if (masked && isSunk && explosionFinished) {
+          return;
+        }
+
         if (this.explosionFrames && this.explosionFrames.length > 0) {
-          // If explosion is still playing → animate
           if (this.explosionPlaying) {
             this.updateExplosion();
           }
 
-          // Always draw current frame (will freeze at last frame)
           const frame = this.explosionFrames[this.explosionFrameIndex];
           p.image(frame, this.x, this.y, this.size, this.size);
         } else {
-          // fallback if no sprite frames are provided
           p.fill(CONFIG.colors.hit);
           p.ellipse(
             this.x + this.size / 2,
