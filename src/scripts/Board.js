@@ -1,15 +1,17 @@
 /*******************************************************************************************
  * Program: Board.js
  * Description:
- *   Defines the Board class for the Battleship game, responsible for managing the grid of cells, ship placements, and rendering the game board.
+ *   Defines the Board class for the Battleship game, responsible for managing the grid of
+ *   cells, ship placements, and rendering the game board.
  *  - Initializes a grid of Cell instances based on specified dimensions.
- *  - Provides methods for rendering the board, validating ship placements, and checking game state (e.g., all ships sunk).
+ *  - Provides methods for rendering the board, validating ship placements, and checking
+ *    game state (e.g., all ships sunk).
  *  - Handles coordinate conversions between pixel space and grid indices.
  *
  * Inputs:
  *   - p5 instance for rendering
  *   - Board position and dimensions for initialization
- *   - Method parameters for ship placement and cell retrieval
+ *   - Method parameters for ship placement
  *
  * Output:
  *   - Rendered game board with grid and coordinate labels
@@ -23,6 +25,7 @@
  * Creation Date: 2026-02-28
  * Revision Dates:
  *   - 3/15 added explosionFrames in constructor
+ *   - 3/17 added full ship sprite rendering support
  *******************************************************************************************/
 
 import { Cell } from "./Cell.js";
@@ -45,20 +48,32 @@ export class Board {
    * @param {number} y - Center Y position of the board (canvas space).
    * @param {number} boardSize - Number of cells per row/column (e.g., 10 for 10x10).
    * @param {number} cellSize - Pixel size of each cell.
+   * @param {p5.Image[]} explosionFrames - Explosion animation frames.
+   * @param {Object<number, p5.Image>} shipSprites - Ship sprites keyed by length.
    */
-  constructor(p, x, y, boardSize, cellSize, explosionFrames = []) {
+  constructor(
+    p,
+    x,
+    y,
+    boardSize,
+    cellSize,
+    explosionFrames = [],
+    shipSprites = {},
+  ) {
     this.p = p;
     this.x = x;
     this.y = y;
     this.boardSize = boardSize;
     this.cellSize = cellSize;
     this.explosionFrames = explosionFrames;
+    this.shipSprites = shipSprites;
+
     this.cells = [];
     this.ships = [];
 
-    let borderPixelSize = boardSize * cellSize;
-    let startX = x - borderPixelSize / 2;
-    let startY = y - borderPixelSize / 2;
+    const borderPixelSize = boardSize * cellSize;
+    const startX = x - borderPixelSize / 2;
+    const startY = y - borderPixelSize / 2;
 
     // Initialize grid cells
     for (let col = 0; col < boardSize; col++) {
@@ -81,16 +96,16 @@ export class Board {
   /**
    * Renders the board grid and coordinate labels.
    *
-   * @param {boolean} masked - If true, ships will not be rendered (used for opponent board).
+   * @param {boolean} masked - If true, ships will not be rendered unless sunk.
    * @param {string|number[]} frameColor - Frame color of the board.
    * @returns {void}
    */
   render(masked, frameColor = CONFIG.colors.text) {
     const p = this.p;
 
-    let borderPixelSize = this.boardSize * this.cellSize;
-    let startX = this.x - borderPixelSize / 2;
-    let startY = this.y - borderPixelSize / 2;
+    const borderPixelSize = this.boardSize * this.cellSize;
+    const startX = this.x - borderPixelSize / 2;
+    const startY = this.y - borderPixelSize / 2;
 
     // draw board frame
     p.push();
@@ -105,11 +120,15 @@ export class Board {
     );
     p.pop();
 
+    // draw cells first
     for (let col = 0; col < this.boardSize; col++) {
       for (let row = 0; row < this.boardSize; row++) {
         this.cells[col][row].render(masked);
       }
     }
+
+    // draw ships once per ship
+    this.renderShips(masked);
 
     p.push();
     p.textAlign(p.CENTER, p.CENTER);
@@ -141,6 +160,63 @@ export class Board {
   }
 
   /**
+   * Renders full ship sprites once per ship.
+   *
+   * @param {boolean} masked - If true, only sunk ships are shown.
+   * @returns {void}
+   */
+  renderShips(masked) {
+    const p = this.p;
+
+    for (const ship of this.ships) {
+      if (masked && !ship.isSunk()) continue;
+
+      const sprite = this.shipSprites[ship.length];
+      if (!sprite || ship.cells.length === 0) continue;
+
+      // find top-left corner of the occupied cells
+      let minX = Infinity;
+      let minY = Infinity;
+
+      for (const cell of ship.cells) {
+        if (cell.x < minX) minX = cell.x;
+        if (cell.y < minY) minY = cell.y;
+      }
+
+      // special case: 1x1 ship has no real orientation
+      if (ship.length === 1) {
+        p.image(sprite, minX, minY, this.cellSize, this.cellSize);
+        continue;
+      }
+
+      // horizontal
+      if (ship.orientation === "E") {
+        p.image(sprite, minX, minY, this.cellSize * ship.length, this.cellSize);
+      } else if (ship.orientation === "W") {
+        p.push();
+        p.translate(minX + this.cellSize * ship.length, minY);
+        p.scale(-1, 1);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      }
+      // vertical
+      else if (ship.orientation === "S") {
+        p.push();
+        p.translate(minX + this.cellSize, minY);
+        p.rotate(p.HALF_PI);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      } else if (ship.orientation === "N") {
+        p.push();
+        p.translate(minX, minY + this.cellSize * ship.length);
+        p.rotate(-p.HALF_PI);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      }
+    }
+  }
+
+  /**
    * Determines whether a ship can be placed at a given position.
    *
    * @param {number} col - Starting column index.
@@ -164,8 +240,9 @@ export class Board {
       const c = col + dc * i;
       const r = row + dr * i;
 
-      if (c < 0 || c >= this.boardSize || r < 0 || r >= this.boardSize)
+      if (c < 0 || c >= this.boardSize || r < 0 || r >= this.boardSize) {
         return null;
+      }
 
       const cell = this.cells[c][r];
       if (cell.ship) return null;
@@ -190,7 +267,7 @@ export class Board {
     if (!cells) return false;
 
     const ship = new Ship(length);
-    ship.placeOnCells(cells);
+    ship.placeOnCells(cells, orientation);
 
     this.ships.push(ship);
     return ship;

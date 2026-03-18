@@ -38,8 +38,8 @@ export class Ship {
   constructor(length) {
     this.length = length;
     this.hits = 0;
-
     this.cells = [];
+    this.orientation = "E";
   }
 
   /**
@@ -62,16 +62,20 @@ export class Ship {
    * @throws {Error} If the number of cells does not match ship length.
    * @returns {void}
    */
-  placeOnCells(cells) {
+  placeOnCells(cells, orientation = "E") {
     if (cells.length !== this.length) {
       throw new Error("Invalid ship placement");
     }
 
     this.cells = cells;
-
+    this.orientation = orientation;
     for (const cell of cells) {
       cell.ship = this;
     }
+  }
+
+  getHeadCell() {
+    return this.cells.length > 0 ? this.cells[0] : null;
   }
 
   /**

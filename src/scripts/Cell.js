@@ -153,15 +153,16 @@ export class Cell {
     p.rect(this.x, this.y, this.size, this.size);
 
     // Render ship if present and not masked
-    if (this.ship && (!masked || this.ship.isSunk())) {
-      p.fill(CONFIG.colors.ship);
-      p.rect(
-        this.x + (this.size - this.size / 1.5) / 2,
-        this.y + (this.size - this.size / 1.5) / 2,
-        this.size / 1.5,
-        this.size / 1.5,
-      );
-    }
+    // do not render rectangle ship anymore
+    // if (this.ship && (!masked || this.ship.isSunk())) {
+    //   p.fill(CONFIG.colors.ship);
+    //   p.rect(
+    //     this.x + (this.size - this.size / 1.5) / 2,
+    //     this.y + (this.size - this.size / 1.5) / 2,
+    //     this.size / 1.5,
+    //     this.size / 1.5,
+    //   );
+    // }
 
     // Render hit/miss markers
     switch (this.state) {

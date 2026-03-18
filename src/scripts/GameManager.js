@@ -85,10 +85,12 @@ export class GameManager {
    * Creates the game manager and initializes core systems.
    * @param {object} p - The p5 instance used for rendering and input.
    */
-  constructor(p, mode, explosionFrames = []) {
+  constructor(p, mode, explosionFrames = [], shipSprites = {}) {
     this.p = p;
     this.mode = mode; // local || ai
     this.explosionFrames = explosionFrames;
+    this.shipSprites = shipSprites;
+
     this.music = null;
     this.sfx = null;
 
@@ -114,6 +116,7 @@ export class GameManager {
       CONFIG.board.size,
       CONFIG.board.cellSize,
       this.explosionFrames,
+      this.shipSprites,
     );
 
     const player2Board = new Board(
@@ -123,6 +126,7 @@ export class GameManager {
       CONFIG.board.size,
       CONFIG.board.cellSize,
       this.explosionFrames,
+      this.shipSprites,
     );
 
     this.players = {
