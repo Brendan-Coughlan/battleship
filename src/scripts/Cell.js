@@ -195,4 +195,59 @@ export class Cell {
         break;
     }
   }
+
+  /**
+   * render the base appearance of the cell
+   * @returns {void}
+   */
+  renderBase() {
+    const p = this.p;
+
+    p.fill(CONFIG.colors.gridInner);
+    p.stroke(CONFIG.colors.gridBorder);
+    p.strokeWeight(2);
+    p.rect(this.x, this.y, this.size, this.size);
+  }
+
+  /**
+   * Renders the overlay elements of the cell
+   * @returns {void}
+   */
+  renderOverlay() {
+    const p = this.p;
+
+    switch (this.state) {
+      case "MISS":
+        p.fill(CONFIG.colors.miss);
+        p.ellipse(
+          this.x + this.size / 2,
+          this.y + this.size / 2,
+          this.size / 2,
+          this.size / 2,
+        );
+        break;
+
+      case "HIT":
+        if (this.explosionFrames && this.explosionFrames.length > 0) {
+          // If explosion is still playing → animate
+          if (this.explosionPlaying) {
+            this.updateExplosion();
+          }
+
+          // Always draw current frame (will freeze at last frame)
+          const frame = this.explosionFrames[this.explosionFrameIndex];
+          p.image(frame, this.x, this.y, this.size, this.size);
+        } else {
+          // fallback if no sprite frames are provided
+          p.fill(CONFIG.colors.hit);
+          p.ellipse(
+            this.x + this.size / 2,
+            this.y + this.size / 2,
+            this.size / 2,
+            this.size / 2,
+          );
+        }
+        break;
+    }
+  }
 }
