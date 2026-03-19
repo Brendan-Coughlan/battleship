@@ -41,12 +41,12 @@ export const CONFIG = Object.freeze({
   },
   colors: {
     background: 255,
-    gridInner: 255,
+    gridInner: [90, 154, 228],
     gridBorder: 0,
     hit: [150, 50, 50],
     miss: [200],
     ship: 100,
-    shipGhost: [0, 150, 255, 120],
+    shipGhost: [255, 255, 255, 120],
     text: 0,
   },
   controls: {
