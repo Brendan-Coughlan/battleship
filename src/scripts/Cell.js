@@ -24,6 +24,7 @@
  * Creation Date: 2026-02-28
  * Revision Dates:
  *   - 3/15 added explosion state, startExplosion and updateExplosion functions
+ *   - 3/21 added animated water
  *******************************************************************************************/
 
 import { CONFIG } from "./config.js";
@@ -36,7 +37,8 @@ import { CONFIG } from "./config.js";
  * Represents a cell ojbect.
  * @class
  */
-export class Cell {
+export class Cell
+{
   /**
    * Creates a new cell on the game board.
    *
@@ -47,8 +49,10 @@ export class Cell {
    * @param {number} y - Pixel Y position of the cell.
    * @param {number} size - Pixel width and height of the cell.
    * @param {Array} explosionFrames - array contain a series of explosion frames
+   * @param {Array} waterFrames - array contain a series of explosion frames
    */
-  constructor(p, col, row, x, y, size, explosionFrames) {
+  constructor(p, col, row, x, y, size, explosionFrames, waterFrames)
+  {
     this.p = p;
     this.col = col;
     this.row = row;
@@ -71,6 +75,17 @@ export class Cell {
     this.explosionPlaying = false;
     this.explosionFrameDelay = 6; // the number of frames the program wait before switching to the next frame
     this.explosionFrameCounter = 0;
+
+    /* =========================
+       Water animation state
+    ========================= */
+
+    // keep track of which water frame should be shown
+    this.waterFrames = waterFrames;
+    this.waterFrameIndex = 0;
+    this.waterPlaying = false;
+    this.waterFrameDelay = 6; // the number of frames the program wait before switching to the next frame
+    this.waterFrameCounter = 0;
   }
 
   /**
@@ -85,14 +100,17 @@ export class Cell {
    *
    * @returns {boolean} True if a ship was hit, otherwise false.
    */
-  fire() {
-    if (this.ship) {
+  fire()
+  {
+    if (this.ship)
+    {
       this.state = "HIT";
       this.ship.hit();
       // if hit, start explosion
       this.startExplosion();
       return true;
-    } else {
+    } else
+    {
       this.state = "MISS";
       return false;
     }
@@ -103,7 +121,8 @@ export class Cell {
    *
    * @returns {void}
    */
-  startExplosion() {
+  startExplosion()
+  {
     // ensure explosion frames exists
     if (!this.explosionFrames || this.explosionFrames.length === 0) return;
     // init explosion state
@@ -117,20 +136,64 @@ export class Cell {
    *
    * @returns {void}
    */
-  updateExplosion() {
+  updateExplosion()
+  {
     if (!this.explosionPlaying) return;
     if (!this.explosionFrames || this.explosionFrames.length === 0) return;
     // move the explosion sprite to the next one
     this.explosionFrameCounter++;
 
-    if (this.explosionFrameCounter >= this.explosionFrameDelay) {
+    if (this.explosionFrameCounter >= this.explosionFrameDelay)
+    {
       // when it reaches 4 frames, move to the next explosion frame image
       this.explosionFrameCounter = 0;
       this.explosionFrameIndex++;
 
-      if (this.explosionFrameIndex >= this.explosionFrames.length) {
+      if (this.explosionFrameIndex >= this.explosionFrames.length)
+      {
         this.explosionFrameIndex = this.explosionFrames.length - 1;
         this.explosionPlaying = false;
+      }
+    }
+  }
+
+  /**
+ * Starts the water animation.
+ *
+ * @returns {void}
+ */
+  startWater()
+  {
+    // ensure explosion frames exists
+    if (!this.waterFrames || this.waterFrames.length === 0) return;
+    // init explosion state
+    this.waterPlaying = true;
+    this.waterFrameIndex = 0;
+    this.waterFrameCounter = 0;
+  }
+
+  /**
+   * Updates the water animation.
+   *
+   * @returns {void}
+   */
+  updateWater()
+  {
+    if (!this.waterPlaying) return;
+    if (!this.waterFrames || this.waterFrames.length === 0) return;
+    // move the explosion sprite to the next one
+    this.waterFrameCounter++;
+
+    if (this.waterFrameCounter >= this.waterFrameDelay)
+    {
+      // when it reaches 4 frames, move to the next water frame image
+      this.waterFrameCounter = 0;
+      this.waterFrameIndex++;
+
+      if (this.waterFrameIndex >= this.waterFrames.length)
+      {
+        this.waterFrameIndex = this.waterFrames.length - 1;
+        this.waterPlaying = false;
       }
     }
   }
@@ -144,7 +207,8 @@ export class Cell {
    * @param {boolean} masked - Whether ships should be hidden.
    * @returns {void}
    */
-  render(masked) {
+  render(masked)
+  {
     const p = this.p;
 
     p.fill(CONFIG.colors.gridInner);
@@ -165,7 +229,8 @@ export class Cell {
     // }
 
     // Render hit/miss markers
-    switch (this.state) {
+    switch (this.state)
+    {
       case "MISS":
         p.fill(CONFIG.colors.miss);
         p.ellipse(
@@ -177,12 +242,14 @@ export class Cell {
         break;
 
       case "HIT":
-        if (this.explosionFrames && this.explosionFrames.length > 0) {
+        if (this.explosionFrames && this.explosionFrames.length > 0)
+        {
           this.updateExplosion();
 
           const frame = this.explosionFrames[this.explosionFrameIndex];
           p.image(frame, this.x, this.y, this.size, this.size);
-        } else {
+        } else
+        {
           // fallback if no sprite frames are provided
           p.fill(CONFIG.colors.hit);
           p.ellipse(
@@ -200,10 +267,23 @@ export class Cell {
    * render the base appearance of the cell
    * @returns {void}
    */
-  renderBase() {
+  renderBase()
+  {
     const p = this.p;
 
-    p.fill(CONFIG.colors.gridInner);
+    if (!this.waterPlaying) this.startWater();
+    if (this.waterFrames && this.waterFrames.length > 0)
+    {
+      p.noFill();
+      this.updateWater();
+
+      const frame = this.waterFrames[this.waterFrameIndex];
+      p.image(frame, this.x, this.y, this.size, this.size);
+    } else
+    {
+      // fallback if no sprite frames are provided
+      p.fill(CONFIG.colors.gridInner);
+    }
     p.stroke(CONFIG.colors.gridBorder);
     p.strokeWeight(2);
     p.rect(this.x, this.y, this.size, this.size);
@@ -215,10 +295,12 @@ export class Cell {
    * @param {boolean} masked - Whether this board is masked (opponent board).
    * @returns {void}
    */
-  renderOverlay(masked) {
+  renderOverlay(masked)
+  {
     const p = this.p;
 
-    switch (this.state) {
+    switch (this.state)
+    {
       case "MISS":
         p.fill(CONFIG.colors.miss);
         p.ellipse(
@@ -239,18 +321,22 @@ export class Cell {
           this.explosionFrameIndex === this.explosionFrames.length - 1;
 
         // Only hide explosion AFTER it finishes
-        if (masked && isSunk && explosionFinished) {
+        if (masked && isSunk && explosionFinished)
+        {
           return;
         }
 
-        if (this.explosionFrames && this.explosionFrames.length > 0) {
-          if (this.explosionPlaying) {
+        if (this.explosionFrames && this.explosionFrames.length > 0)
+        {
+          if (this.explosionPlaying)
+          {
             this.updateExplosion();
           }
 
           const frame = this.explosionFrames[this.explosionFrameIndex];
           p.image(frame, this.x, this.y, this.size, this.size);
-        } else {
+        } else
+        {
           p.fill(CONFIG.colors.hit);
           p.ellipse(
             this.x + this.size / 2,

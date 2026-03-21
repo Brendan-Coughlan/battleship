@@ -26,6 +26,7 @@
  * Revision Dates:
  *   - 3/15 added explosionFrames in constructor
  *   - 3/17 added full ship sprite rendering support
+ *   - 3/21 added animated water sprites
  *******************************************************************************************/
 
 import { Cell } from "./Cell.js";
@@ -50,6 +51,7 @@ export class Board {
    * @param {number} cellSize - Pixel size of each cell.
    * @param {p5.Image[]} explosionFrames - Explosion animation frames.
    * @param {Object<number, p5.Image>} shipSprites - Ship sprites keyed by length.
+   * @param {p5.Image[]} waterFrames - Water animation frames.
    */
   constructor(
     p,
@@ -59,6 +61,7 @@ export class Board {
     cellSize,
     explosionFrames = [],
     shipSprites = {},
+    waterFrames = []
   ) {
     this.p = p;
     this.x = x;
@@ -67,6 +70,7 @@ export class Board {
     this.cellSize = cellSize;
     this.explosionFrames = explosionFrames;
     this.shipSprites = shipSprites;
+    this.waterFrames = waterFrames;
 
     this.cells = [];
     this.ships = [];
@@ -88,6 +92,7 @@ export class Board {
           startY + row * cellSize,
           cellSize,
           explosionFrames,
+          waterFrames,
         );
       }
     }

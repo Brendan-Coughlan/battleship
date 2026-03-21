@@ -26,55 +26,71 @@
 
 import { GameManager } from "./GameManager.js";
 
-const sketch = (p) => {
+const sketch = (p) =>
+{
   let gameManager;
 
   const explosionFrames = [];
+  const waterFrames = [];
   const shipSprites = {};
 
   // load images before setup
-  p.preload = () => {
+  p.preload = () =>
+  {
     // load explosion frames
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 7; i++)
+    {
       explosionFrames.push(
         p.loadImage(`../../assets/sprites/explosion/${i + 1}.png`),
       );
+      for (let i = 0; i < 16; i++)
+      {
+        waterFrames.push(
+          p.loadImage(`../../assets/sprites/water/water_tile_${i + 1}.png`),
+        );
+      }
     }
 
-    // load ship sprites by length
-    shipSprites[1] = p.loadImage("../../assets/sprites/ships/1.png");
-    shipSprites[2] = p.loadImage("../../assets/sprites/ships/2.png");
-    shipSprites[3] = p.loadImage("../../assets/sprites/ships/3.png");
-    shipSprites[4] = p.loadImage("../../assets/sprites/ships/4.png");
-    shipSprites[5] = p.loadImage("../../assets/sprites/ships/5.png");
+
+      // load ship sprites by length
+      shipSprites[1] = p.loadImage("../../assets/sprites/ships/1.png");
+      shipSprites[2] = p.loadImage("../../assets/sprites/ships/2.png");
+      shipSprites[3] = p.loadImage("../../assets/sprites/ships/3.png");
+      shipSprites[4] = p.loadImage("../../assets/sprites/ships/4.png");
+      shipSprites[5] = p.loadImage("../../assets/sprites/ships/5.png");
+    };
+
+    p.setup = async () =>
+    {
+      p.createCanvas(p.windowWidth, p.windowHeight);
+
+      // search the mode in the parameter of the URL
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode");
+
+      gameManager = new GameManager(p, mode, explosionFrames, shipSprites, waterFrames);
+      await gameManager.init();
+    };
+
+    p.draw = () =>
+    {
+      gameManager.render();
+    };
+
+    p.mousePressed = () =>
+    {
+      gameManager.handleClick(p.mouseX, p.mouseY);
+    };
+
+    p.mouseMoved = () =>
+    {
+      gameManager.handleMouseMove(p.mouseX, p.mouseY);
+    };
+
+    p.keyPressed = () =>
+    {
+      gameManager.handleKeyPress(p.key);
+    };
   };
 
-  p.setup = async () => {
-    p.createCanvas(p.windowWidth, p.windowHeight);
-
-    // search the mode in the parameter of the URL
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get("mode");
-
-    gameManager = new GameManager(p, mode, explosionFrames, shipSprites);
-    await gameManager.init();
-  };
-
-  p.draw = () => {
-    gameManager.render();
-  };
-
-  p.mousePressed = () => {
-    gameManager.handleClick(p.mouseX, p.mouseY);
-  };
-
-  p.mouseMoved = () => {
-    gameManager.handleMouseMove(p.mouseX, p.mouseY);
-  };
-
-  p.keyPressed = () => {
-    gameManager.handleKeyPress(p.key);
-  };
-};
-
-new p5(sketch);
+  new p5(sketch);
