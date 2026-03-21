@@ -180,6 +180,10 @@ export class Bot
         selectedCell = this.getRandomCell(opponentBoard);
         break;
       case "MEDIUM":
+        // 25% chance the bot uses their powerup
+        const powerupChance = Math.random()
+        if (powerupChance <= 0.25) this.usePowerup();
+
         const smartCell = this.getSmartTarget(opponentBoard);
 
         if (smartCell)
@@ -191,6 +195,7 @@ export class Bot
         }
         break;
       case "HARD":
+        this.usePowerup();
         let found = false;
         for (let col = 0; col < opponentBoard.boardSize && !found; col++)
         {
@@ -211,5 +216,13 @@ export class Bot
     const selectedX = selectedCell.x + 1;
     const selectedY = selectedCell.y + 1;
     return { selectedX, selectedY };
+  }
+
+  usePowerup()
+  {
+    if (!this.player.has_powerup) return;
+
+    this.player.powerup_active = true;
+    this.player.has_powerup = false;
   }
 }
