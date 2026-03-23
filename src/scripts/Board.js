@@ -125,24 +125,24 @@ export class Board {
     );
     p.pop();
 
-    // 1. draw cell backgrounds
+    // draw cell backgrounds
     for (let col = 0; col < this.boardSize; col++) {
       for (let row = 0; row < this.boardSize; row++) {
         this.cells[col][row].renderBase();
       }
     }
 
-    // 2. draw ships
+    // draw ships
     this.renderShips(masked);
 
-    // 3. draw hit/miss/explosion on top
+    // draw hit/miss/explosion on top
     for (let col = 0; col < this.boardSize; col++) {
       for (let row = 0; row < this.boardSize; row++) {
         this.cells[col][row].renderOverlay(masked);
       }
     }
 
-    // 4. labels
+    // labels
     p.push();
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(this.cellSize * 0.35);

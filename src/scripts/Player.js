@@ -36,15 +36,13 @@
  * Represents a Battleship game player.
  * @class
  */
-export class Player
-{
+export class Player {
   /**
    * Creates a player instance.
    * @param {number} id - Unique player ID (typically 1 or 2).
    * @param {Board} board - The player's board instance.
    */
-  constructor(id, board)
-  {
+  constructor(id, board) {
     this.id = id;
     this.board = board;
 
@@ -63,8 +61,7 @@ export class Player
    * @param {number} length
    * @returns {boolean} true if placed successfully
    */
-  placeShipAt(x, y, length)
-  {
+  placeShipAt(x, y, length) {
     const cell = this.board.getCellAt(x, y);
     if (!cell) return;
 
@@ -87,8 +84,7 @@ export class Player
    * @param {number} y
    * @returns {{ ok: boolean, isHit: (boolean|undefined), cell: (*|undefined) }}
    */
-  fireAt(x, y)
-  {
+  fireAt(x, y) {
     const cell = this.board.getCellAt(x, y);
     if (!cell) return { ok: false };
     if (cell.state !== "EMPTY") return { ok: false };
@@ -103,8 +99,7 @@ export class Player
    * @param {number} row
    * @returns {{ ok: boolean, isHit: (boolean|undefined), targetCell: (*|undefined) }}
    */
-  fireAtCell(col, row)
-  {
+  fireAtCell(col, row) {
     const cell = this.board.cells[col][row];
     if (!cell) return { ok: false };
     if (cell.state !== "EMPTY") return { ok: false };
@@ -117,8 +112,7 @@ export class Player
    * Deletes a ship at given coordinates.
    * @returns {boolean} True if a ship was deleted.
    */
-  deleteShipAt(x, y)
-  {
+  deleteShipAt(x, y) {
     const cell = this.board.getCellAt(x, y);
 
     if (!cell || !cell.ship) return false;
@@ -126,24 +120,31 @@ export class Player
     const ship = cell.ship;
     const shipCells = ship.cells || [];
 
-    for (const c of shipCells)
-    {
+    // clear all cells
+    for (const c of shipCells) {
       c.ship = null;
+      c.state = "EMPTY"; // for overlay
     }
 
+    // remove from Board.ships
+    const index = this.board.ships.indexOf(ship);
+    if (index !== -1) {
+      this.board.ships.splice(index, 1);
+    }
+
+    // remove from Player.ships
     const len = shipCells.length;
-    if (len in this.ships)
-    {
+    if (len in this.ships) {
       delete this.ships[len];
     }
+
     return true;
   }
 
   /**
    * Rotates the ships orientation when placing
    */
-  rotateShip()
-  {
+  rotateShip() {
     const directions = ["N", "E", "S", "W"];
     const idx = directions.indexOf(this.orientation);
     this.orientation = directions[(idx + 1) % directions.length];
@@ -153,8 +154,7 @@ export class Player
    * Get current ship direction
    * @returns {string} "N", "E", "S", "W"
    */
-  getOrientation()
-  {
+  getOrientation() {
     return this.orientation;
   }
 
@@ -162,8 +162,7 @@ export class Player
    * Set current ship direction
    * @param {string} "N", "E", "S", "W"
    */
-  setOrientation(orientation)
-  {
+  setOrientation(orientation) {
     this.orientation = orientation;
   }
 
@@ -174,8 +173,7 @@ export class Player
    * @param {number} y - Y coordinate in canvas space.
    * @returns {any} The board cell at the specified position.
    */
-  getCellAt(x, y)
-  {
+  getCellAt(x, y) {
     return this.board.getCellAt(x, y);
   }
 
@@ -184,8 +182,7 @@ export class Player
    *
    * @returns {boolean} True if all ships are destroyed.
    */
-  allShipsSunk()
-  {
+  allShipsSunk() {
     return this.board.allShipsSunk();
   }
 }
