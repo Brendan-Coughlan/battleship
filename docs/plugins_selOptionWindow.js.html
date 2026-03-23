@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: plugins/selNumWindow.js</title>
+    <title>JSDoc: Source: plugins/selOptionWindow.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: plugins/selNumWindow.js</h1>
+    <h1 class="page-title">Source: plugins/selOptionWindow.js</h1>
 
     
 
@@ -28,23 +28,22 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * A pop-up window plugin that lets the user select a number.
- * @module plugins/selNumWindow
+ * @module plugins/selOptionWindow
  * @param {Object} [options={}] Configuration of the window.
  * @param {string} [options.title="Title"] Modal title.
  * @param {string} [options.message="message"] Modal message.
  * @param {string} [options.yesText="Yes"] Confirm button text.
  * @param {string} [options.noText="No"] Cancel button text.
  * @param {boolean} [options.lockScroll=true] Whether to lock page scrolling while open.
- * @param {number} [options.min=1] Minimum selectable number.
- * @param {number} [options.max=10] Maximum selectable number.
- * @param {number} [options.defaultValue=1] Default selected value (must be within [min, max]).
+ * @param {Array} [options.options=[]] List of selectable options.
+ * @param {*} [options.defaultValue=null] Default selected value.
  *
  * @returns {{ render: function(): Promise&lt;{ok: boolean, value: (number|null)}>, getIsOpen: function(): boolean }}
  * An object containing:
  * - render(): opens the modal and resolves with the user's choice
  * - getIsOpen(): returns whether the modal is currently open
  */
-export function selNumWindow(options = {}) {
+export function selOptionWindow(options = {}) {
   // default configuration of the window
   const defaults = {
     title: "Title",
@@ -52,9 +51,8 @@ export function selNumWindow(options = {}) {
     yesText: "Yes",
     noText: "No",
     lockScroll: true,
-    min: 1,
-    max: 10,
-    defaultValue: 1,
+    options: [],
+    defaultValue: null,
   };
 
   // merge options config with default config
@@ -75,26 +73,26 @@ export function selNumWindow(options = {}) {
     const prevOverflow = document.body.style.overflow;
     if (config.lockScroll) document.body.style.overflow = "hidden";
 
-    const min = config.min;
-    const max = config.max;
+    const choices = config.options;
 
     // pick a safe default
-    let initial;
-    if (
-      Number.isInteger(config.defaultValue) &amp;&amp;
-      config.defaultValue >= config.min &amp;&amp;
-      config.defaultValue &lt;= config.max
-    ) {
-      initial = config.defaultValue;
-    } else {
-      initial = config.min;
-    }
+    let initialIndex = choices.findIndex((opt) =>
+      typeof opt === "object"
+        ? opt.value === config.defaultValue
+        : opt === config.defaultValue,
+    );
+
+    if (initialIndex === -1) initialIndex = 0;
 
     // build &lt;option> list
-    const optionsHtml = Array.from({ length: max - min + 1 }, (_, i) => {
-      const n = min + i;
-      return `&lt;option value="${n}" ${n === initial ? "selected" : ""}>${n}&lt;/option>`;
-    }).join("");
+    const optionsHtml = choices
+      .map((opt, i) => {
+        const label = typeof opt === "object" ? opt.label : opt;
+        const value = typeof opt === "object" ? opt.value : opt;
+
+        return `&lt;option value="${i}" ${i === initialIndex ? "selected" : ""}>${label}&lt;/option>`;
+      })
+      .join("");
 
     return new Promise((resolve) => {
       const overlay = document.createElement("div");
@@ -107,7 +105,7 @@ export function selNumWindow(options = {}) {
         &lt;h3 class="ipp-title">${config.title}&lt;/h3>
         &lt;p class="ipp-message">${config.message}&lt;/p>
 
-        &lt;select class="ipp-input" aria-label="Choose a number">
+        &lt;select class="ipp-input" aria-label="Choose an option">
           ${optionsHtml}
         &lt;/select>
 
@@ -135,7 +133,10 @@ export function selNumWindow(options = {}) {
       };
 
       const finish = (ok) => {
-        const value = parseInt(select.value, 10);
+        const selectedIndex = parseInt(select.value, 10);
+        const selected = choices[selectedIndex];
+        const value = typeof selected === "object" ? selected.value : selected;
+
         cleanup();
         // return an object that records user's choice
         resolve({ ok, value });
@@ -174,13 +175,13 @@ export function selNumWindow(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selNumWindow.html">plugins/selNumWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selOptionWindow.html">plugins/selOptionWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Bot.html">Bot</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Feb 28 2026 17:31:12 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Mar 23 2026 00:52:39 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

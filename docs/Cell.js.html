@@ -51,7 +51,8 @@
  *
  * Creation Date: 2026-02-28
  * Revision Dates:
- *   - N/A
+ *   - 3/15 added explosion state, startExplosion and updateExplosion functions
+ *   - 3/21 added animated water
  *******************************************************************************************/
 
 import { CONFIG } from "./config.js";
@@ -64,7 +65,8 @@ import { CONFIG } from "./config.js";
  * Represents a cell ojbect.
  * @class
  */
-export class Cell {
+export class Cell
+{
   /**
    * Creates a new cell on the game board.
    *
@@ -74,8 +76,11 @@ export class Cell {
    * @param {number} x - Pixel X position of the cell.
    * @param {number} y - Pixel Y position of the cell.
    * @param {number} size - Pixel width and height of the cell.
+   * @param {Array} explosionFrames - array contain a series of explosion frames
+   * @param {Array} waterFrames - array contain a series of explosion frames
    */
-  constructor(p, col, row, x, y, size) {
+  constructor(p, col, row, x, y, size, explosionFrames, waterFrames)
+  {
     this.p = p;
     this.col = col;
     this.row = row;
@@ -87,6 +92,28 @@ export class Cell {
 
     /** @type {"EMPTY" | "HIT" | "MISS"} */
     this.state = "EMPTY";
+
+    /* =========================
+       Explosion animation state
+    ========================= */
+
+    // keep track of which explosion frame should be shown
+    this.explosionFrames = explosionFrames;
+    this.explosionFrameIndex = 0;
+    this.explosionPlaying = false;
+    this.explosionFrameDelay = 6; // the number of frames the program wait before switching to the next frame
+    this.explosionFrameCounter = 0;
+
+    /* =========================
+       Water animation state
+    ========================= */
+
+    // keep track of which water frame should be shown
+    this.waterFrames = waterFrames;
+    this.waterFrameIndex = 0;
+    this.waterPlaying = false;
+    this.waterFrameDelay = 6; // the number of frames the program wait before switching to the next frame
+    this.waterFrameCounter = 0;
   }
 
   /**
@@ -101,14 +128,101 @@ export class Cell {
    *
    * @returns {boolean} True if a ship was hit, otherwise false.
    */
-  fire() {
-    if (this.ship) {
+  fire()
+  {
+    if (this.ship)
+    {
       this.state = "HIT";
       this.ship.hit();
+      // if hit, start explosion
+      this.startExplosion();
       return true;
-    } else {
+    } else
+    {
       this.state = "MISS";
       return false;
+    }
+  }
+
+  /**
+   * Starts the explosion animation.
+   *
+   * @returns {void}
+   */
+  startExplosion()
+  {
+    // ensure explosion frames exists
+    if (!this.explosionFrames || this.explosionFrames.length === 0) return;
+    // init explosion state
+    this.explosionPlaying = true;
+    this.explosionFrameIndex = 0;
+    this.explosionFrameCounter = 0;
+  }
+
+  /**
+   * Updates the explosion animation.
+   *
+   * @returns {void}
+   */
+  updateExplosion()
+  {
+    if (!this.explosionPlaying) return;
+    if (!this.explosionFrames || this.explosionFrames.length === 0) return;
+    // move the explosion sprite to the next one
+    this.explosionFrameCounter++;
+
+    if (this.explosionFrameCounter >= this.explosionFrameDelay)
+    {
+      // when it reaches 4 frames, move to the next explosion frame image
+      this.explosionFrameCounter = 0;
+      this.explosionFrameIndex++;
+
+      if (this.explosionFrameIndex >= this.explosionFrames.length)
+      {
+        this.explosionFrameIndex = this.explosionFrames.length - 1;
+        this.explosionPlaying = false;
+      }
+    }
+  }
+
+  /**
+ * Starts the water animation.
+ *
+ * @returns {void}
+ */
+  startWater()
+  {
+    // ensure explosion frames exists
+    if (!this.waterFrames || this.waterFrames.length === 0) return;
+    // init explosion state
+    this.waterPlaying = true;
+    this.waterFrameIndex = 0;
+    this.waterFrameCounter = 0;
+  }
+
+  /**
+   * Updates the water animation.
+   *
+   * @returns {void}
+   */
+  updateWater()
+  {
+    if (!this.waterPlaying) return;
+    if (!this.waterFrames || this.waterFrames.length === 0) return;
+    // move the explosion sprite to the next one
+    this.waterFrameCounter++;
+
+    if (this.waterFrameCounter >= this.waterFrameDelay)
+    {
+      // when it reaches 4 frames, move to the next water frame image
+      this.waterFrameCounter = 0;
+      this.waterFrameIndex++;
+
+      if (this.waterFrameIndex >= this.waterFrames.length)
+      {
+        this.waterFrameIndex = this.waterFrames.length - 1;
+        this.waterPlaying = false;
+      }
     }
   }
 
@@ -121,7 +235,8 @@ export class Cell {
    * @param {boolean} masked - Whether ships should be hidden.
    * @returns {void}
    */
-  render(masked) {
+  render(masked)
+  {
     const p = this.p;
 
     p.fill(CONFIG.colors.gridInner);
@@ -130,18 +245,20 @@ export class Cell {
     p.rect(this.x, this.y, this.size, this.size);
 
     // Render ship if present and not masked
-    if (this.ship &amp;&amp; (!masked || this.ship.isSunk())) {
-      p.fill(CONFIG.colors.ship);
-      p.rect(
-        this.x + (this.size - this.size / 1.5) / 2,
-        this.y + (this.size - this.size / 1.5) / 2,
-        this.size / 1.5,
-        this.size / 1.5,
-      );
-    }
+    // do not render rectangle ship anymore
+    // if (this.ship &amp;&amp; (!masked || this.ship.isSunk())) {
+    //   p.fill(CONFIG.colors.ship);
+    //   p.rect(
+    //     this.x + (this.size - this.size / 1.5) / 2,
+    //     this.y + (this.size - this.size / 1.5) / 2,
+    //     this.size / 1.5,
+    //     this.size / 1.5,
+    //   );
+    // }
 
     // Render hit/miss markers
-    switch (this.state) {
+    switch (this.state)
+    {
       case "MISS":
         p.fill(CONFIG.colors.miss);
         p.ellipse(
@@ -153,13 +270,109 @@ export class Cell {
         break;
 
       case "HIT":
-        p.fill(CONFIG.colors.hit);
+        if (this.explosionFrames &amp;&amp; this.explosionFrames.length > 0)
+        {
+          this.updateExplosion();
+
+          const frame = this.explosionFrames[this.explosionFrameIndex];
+          p.image(frame, this.x, this.y, this.size, this.size);
+        } else
+        {
+          // fallback if no sprite frames are provided
+          p.fill(CONFIG.colors.hit);
+          p.ellipse(
+            this.x + this.size / 2,
+            this.y + this.size / 2,
+            this.size / 2,
+            this.size / 2,
+          );
+        }
+        break;
+    }
+  }
+
+  /**
+   * render the base appearance of the cell
+   * @returns {void}
+   */
+  renderBase()
+  {
+    const p = this.p;
+
+    if (!this.waterPlaying) this.startWater();
+    if (this.waterFrames &amp;&amp; this.waterFrames.length > 0)
+    {
+      p.noFill();
+      this.updateWater();
+
+      const frame = this.waterFrames[this.waterFrameIndex];
+      p.image(frame, this.x, this.y, this.size, this.size);
+    } else
+    {
+      // fallback if no sprite frames are provided
+      p.fill(CONFIG.colors.gridInner);
+    }
+    p.stroke(CONFIG.colors.gridBorder);
+    p.strokeWeight(2);
+    p.rect(this.x, this.y, this.size, this.size);
+  }
+
+  /**
+   * Renders the overlay elements of the cell
+   *
+   * @param {boolean} masked - Whether this board is masked (opponent board).
+   * @returns {void}
+   */
+  renderOverlay(masked)
+  {
+    const p = this.p;
+
+    switch (this.state)
+    {
+      case "MISS":
+        p.fill(CONFIG.colors.miss);
         p.ellipse(
           this.x + this.size / 2,
           this.y + this.size / 2,
           this.size / 2,
           this.size / 2,
         );
+        break;
+
+      case "HIT":
+        // Only on the opponent board:
+        // if the ship is sunk, hide hit/explosion overlay
+        // so only the full ship sprite is shown.
+        const isSunk = this.ship &amp;&amp; this.ship.isSunk();
+        const explosionFinished =
+          !this.explosionPlaying &amp;&amp;
+          this.explosionFrameIndex === this.explosionFrames.length - 1;
+
+        // Only hide explosion AFTER it finishes
+        if (masked &amp;&amp; isSunk &amp;&amp; explosionFinished)
+        {
+          return;
+        }
+
+        if (this.explosionFrames &amp;&amp; this.explosionFrames.length > 0)
+        {
+          if (this.explosionPlaying)
+          {
+            this.updateExplosion();
+          }
+
+          const frame = this.explosionFrames[this.explosionFrameIndex];
+          p.image(frame, this.x, this.y, this.size, this.size);
+        } else
+        {
+          p.fill(CONFIG.colors.hit);
+          p.ellipse(
+            this.x + this.size / 2,
+            this.y + this.size / 2,
+            this.size / 2,
+            this.size / 2,
+          );
+        }
         break;
     }
   }
@@ -174,13 +387,13 @@ export class Cell {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selNumWindow.html">plugins/selNumWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selOptionWindow.html">plugins/selOptionWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Bot.html">Bot</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Feb 28 2026 17:31:12 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Mar 23 2026 00:52:39 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

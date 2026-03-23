@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Timer</title>
+    <title>JSDoc: Class: Bot</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Timer</h1>
+    <h1 class="page-title">Class: Bot</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Timer<span class="signature">(p, x, y, seconds)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Bot<span class="signature">(player, difficulty)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Represents a timer object during gameplay.</div>
+            <div class="class-description">Represents an AI bot player.</div>
         
     
 </header>
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="Timer"><span class="type-signature"></span>new Timer<span class="signature">(p, x, y, seconds)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Bot"><span class="type-signature"></span>new Bot<span class="signature">(player, difficulty)</span><span class="type-signature"></span></h4>
     
 
     
@@ -53,7 +53,7 @@
 
 
 <div class="description">
-    Constructor of timer
+    Creates a new Bot instance.
 </div>
 
 
@@ -89,13 +89,13 @@
 
         <tr>
             
-                <td class="name"><code>p</code></td>
+                <td class="name"><code>player</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><a href="Player.html">Player</a></span>
 
 
             
@@ -105,20 +105,26 @@
 
             
 
-            <td class="description last">p5 instance</td>
+            <td class="description last">The player instance controlled by this bot.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>x</code></td>
+                <td class="name"><code>difficulty</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">"EASY"</span>
+|
+
+<span class="param-type">"MEDIUM"</span>
+|
+
+<span class="param-type">"HARD"</span>
 
 
             
@@ -128,53 +134,7 @@
 
             
 
-            <td class="description last">X coordinate where the timer text will be displayed</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>y</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Y coordinate where the timer text will be displayed</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>seconds</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Initial countdown duration in seconds</td>
+            <td class="description last">AI difficulty level.</td>
         </tr>
 
     
@@ -215,7 +175,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line34">line 34</a>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line38">line 38</a>
     </li></ul></dd>
     
 
@@ -256,7 +216,7 @@
         <h3 class="subsection-title">Classes</h3>
 
         <dl>
-            <dt><a href="Timer.html">Timer</a></dt>
+            <dt><a href="Bot.html">Bot</a></dt>
             <dd></dd>
         </dl>
     
@@ -278,7 +238,7 @@
     
 
     
-    <h4 class="name" id="isFinished"><span class="type-signature"></span>isFinished<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="getFireLocation"><span class="type-signature"></span>getFireLocation<span class="signature">(opponentBoard)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -286,7 +246,7 @@
 
 
 <div class="description">
-    Checks whether the timer has reached zero.
+    Determines the firing location based on difficulty.
 </div>
 
 
@@ -295,6 +255,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opponentBoard</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Board.html">Board</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Opponent's board</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -330,7 +339,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line155">line 155</a>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line251">line 251</a>
     </li></ul></dd>
     
 
@@ -359,7 +368,7 @@
 
         
 <div class="param-desc">
-    True if countdown finished.
+    Pixel coordinates
 </div>
 
 
@@ -370,7 +379,7 @@
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type">Object</span>
 
 
     </dd>
@@ -388,7 +397,7 @@
     
 
     
-    <h4 class="name" id="pause"><span class="type-signature"></span>pause<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="getNextBestCell"><span class="type-signature"></span>getNextBestCell<span class="signature">(board, cell)</span><span class="type-signature"> &rarr; {<a href="Cell.html">Cell</a>|null}</span></h4>
     
 
     
@@ -396,219 +405,7 @@
 
 
 <div class="description">
-    Pauses the timer.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line127">line 127</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">void</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Renders the timer and updates its countdown state.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line89">line 89</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">void</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="reset"><span class="type-signature"></span>reset<span class="signature">(seconds<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Resets remaining time but does not start the timer.
+    Finds the next best adjacent cell around a hit.
 </div>
 
 
@@ -632,11 +429,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -648,39 +441,46 @@
 
         <tr>
             
-                <td class="name"><code>seconds</code></td>
+                <td class="name"><code>board</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type"><a href="Board.html">Board</a></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last">Opponent's board</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cell</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type"><a href="Cell.html">Cell</a></span>
+
+
+            
+            </td>
+
             
 
             
-                <td class="default">
-                
-                    this.initial
-                
-                </td>
-            
 
-            <td class="description last">New remaining time in seconds.</td>
+            <td class="description last">Starting hit cell</td>
         </tr>
 
     
@@ -721,7 +521,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line146">line 146</a>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line212">line 212</a>
     </li></ul></dd>
     
 
@@ -749,121 +549,22 @@
 <h5>Returns:</h5>
 
         
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">void</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="resume"><span class="type-signature"></span>resume<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Resumes the timer if there is remaining time.
+<div class="param-desc">
+    Next candidate cell
 </div>
 
 
 
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line135">line 135</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
 <dl>
     <dt>
         Type
     </dt>
     <dd>
         
-<span class="param-type">void</span>
+<span class="param-type"><a href="Cell.html">Cell</a></span>
+|
+
+<span class="param-type">null</span>
 
 
     </dd>
@@ -881,7 +582,7 @@
     
 
     
-    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">(seconds<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="getRandomCell"><span class="type-signature"></span>getRandomCell<span class="signature">(board)</span><span class="type-signature"> &rarr; {<a href="Cell.html">Cell</a>}</span></h4>
     
 
     
@@ -889,7 +590,7 @@
 
 
 <div class="description">
-    Starts the timer.
+    Returns a random valid cell to fire at.
 </div>
 
 
@@ -913,11 +614,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -929,39 +626,23 @@
 
         <tr>
             
-                <td class="name"><code>seconds</code></td>
+                <td class="name"><code>board</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type"><a href="Board.html">Board</a></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    this.initial
-                
-                </td>
-            
 
-            <td class="description last">Duration to start the timer with (seconds).</td>
+            <td class="description last">Opponent's board</td>
         </tr>
 
     
@@ -1002,7 +683,328 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line62">line 62</a>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line187">line 187</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A randomly selected empty cell
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Cell.html">Cell</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getSmartTarget"><span class="type-signature"></span>getSmartTarget<span class="signature">(board)</span><span class="type-signature"> &rarr; {<a href="Cell.html">Cell</a>|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Determines a smart target based on existing hits.- If multiple hits are aligned, the bot infers ship direction- Attempts to extend attack along that direction- Falls back to adjacent probing if direction is unclear
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>board</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Board.html">Board</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Opponent's board</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line62">line 62</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A target cell or null if no smart move found
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Cell.html">Cell</a></span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="placeNextShip"><span class="type-signature"></span>placeNextShip<span class="signature">(length)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Places a ship randomly on the board.Continues attempting random placements until successful.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>length</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Length of the ship</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line156">line 156</a>
     </li></ul></dd>
     
 
@@ -1056,7 +1058,7 @@
     
 
     
-    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="usePowerup"><span class="type-signature"></span>usePowerup<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -1064,7 +1066,7 @@
 
 
 <div class="description">
-    Updates the remaining time. Call once per frame while rendering.
+    Activates the bot's power-up ability.
 </div>
 
 
@@ -1108,7 +1110,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Timer.js.html">Timer.js</a>, <a href="Timer.js.html#line73">line 73</a>
+        <a href="Bot.js.html">Bot.js</a>, <a href="Bot.js.html#line297">line 297</a>
     </li></ul></dd>
     
 

@@ -29,15 +29,17 @@
             <pre class="prettyprint source linenums"><code>/*******************************************************************************************
  * Program: Board.js
  * Description:
- *   Defines the Board class for the Battleship game, responsible for managing the grid of cells, ship placements, and rendering the game board.
+ *   Defines the Board class for the Battleship game, responsible for managing the grid of
+ *   cells, ship placements, and rendering the game board.
  *  - Initializes a grid of Cell instances based on specified dimensions.
- *  - Provides methods for rendering the board, validating ship placements, and checking game state (e.g., all ships sunk).
+ *  - Provides methods for rendering the board, validating ship placements, and checking
+ *    game state (e.g., all ships sunk).
  *  - Handles coordinate conversions between pixel space and grid indices.
  *
  * Inputs:
  *   - p5 instance for rendering
  *   - Board position and dimensions for initialization
- *   - Method parameters for ship placement and cell retrieval
+ *   - Method parameters for ship placement
  *
  * Output:
  *   - Rendered game board with grid and coordinate labels
@@ -50,9 +52,10 @@
  *
  * Creation Date: 2026-02-28
  * Revision Dates:
- *   - N/A
+ *   - 3/15 added explosionFrames in constructor
+ *   - 3/17 added full ship sprite rendering support
+ *   - 3/21 added animated water sprites
  *******************************************************************************************/
-
 
 import { Cell } from "./Cell.js";
 import { CONFIG } from "./config.js";
@@ -65,8 +68,7 @@ import { Ship } from "./Ship.js";
  * Represents a board object.
  * @class
  */
-export class Board
-{
+export class Board {
   /**
    * Creates a new game board.
    *
@@ -75,35 +77,50 @@ export class Board
    * @param {number} y - Center Y position of the board (canvas space).
    * @param {number} boardSize - Number of cells per row/column (e.g., 10 for 10x10).
    * @param {number} cellSize - Pixel size of each cell.
+   * @param {p5.Image[]} explosionFrames - Explosion animation frames.
+   * @param {Object&lt;number, p5.Image>} shipSprites - Ship sprites keyed by length.
+   * @param {p5.Image[]} waterFrames - Water animation frames.
    */
-  constructor(p, x, y, boardSize, cellSize)
-  {
+  constructor(
+    p,
+    x,
+    y,
+    boardSize,
+    cellSize,
+    explosionFrames = [],
+    shipSprites = {},
+    waterFrames = []
+  ) {
     this.p = p;
     this.x = x;
     this.y = y;
     this.boardSize = boardSize;
     this.cellSize = cellSize;
+    this.explosionFrames = explosionFrames;
+    this.shipSprites = shipSprites;
+    this.waterFrames = waterFrames;
+
     this.cells = [];
     this.ships = [];
 
-    let borderPixelSize = boardSize * cellSize;
-    let startX = x - borderPixelSize / 2;
-    let startY = y - borderPixelSize / 2;
+    const borderPixelSize = boardSize * cellSize;
+    const startX = x - borderPixelSize / 2;
+    const startY = y - borderPixelSize / 2;
 
     // Initialize grid cells
-    for (let col = 0; col &lt; boardSize; col++)
-    {
+    for (let col = 0; col &lt; boardSize; col++) {
       this.cells[col] = [];
 
-      for (let row = 0; row &lt; boardSize; row++)
-      {
+      for (let row = 0; row &lt; boardSize; row++) {
         this.cells[col][row] = new Cell(
           p,
           col,
           row,
           startX + col * cellSize,
           startY + row * cellSize,
-          cellSize
+          cellSize,
+          explosionFrames,
+          waterFrames,
         );
       }
     }
@@ -112,54 +129,130 @@ export class Board
   /**
    * Renders the board grid and coordinate labels.
    *
-   * @param {boolean} masked - If true, ships will not be rendered (used for opponent board).
+   * @param {boolean} masked - If true, ships will not be rendered unless sunk.
+   * @param {string|number[]} frameColor - Frame color of the board.
    * @returns {void}
    */
-  render(masked)
-  {
+  render(masked, frameColor = CONFIG.colors.text) {
     const p = this.p;
 
-    let borderPixelSize = this.boardSize * this.cellSize;
-    let startX = this.x - borderPixelSize / 2;
-    let startY = this.y - borderPixelSize / 2;
+    const borderPixelSize = this.boardSize * this.cellSize;
+    const startX = this.x - borderPixelSize / 2;
+    const startY = this.y - borderPixelSize / 2;
 
-    for (let col = 0; col &lt; this.boardSize; col++)
-    {
-      for (let row = 0; row &lt; this.boardSize; row++)
-      {
-        this.cells[col][row].render(masked);
+    // frame
+    p.push();
+    p.noFill();
+    p.stroke(frameColor);
+    p.strokeWeight(CONFIG.boardFrame.strokeWeight);
+    p.rect(
+      startX - CONFIG.boardFrame.padding,
+      startY - CONFIG.boardFrame.padding,
+      borderPixelSize + CONFIG.boardFrame.padding * 2,
+      borderPixelSize + CONFIG.boardFrame.padding * 2,
+    );
+    p.pop();
+
+    // draw cell backgrounds
+    for (let col = 0; col &lt; this.boardSize; col++) {
+      for (let row = 0; row &lt; this.boardSize; row++) {
+        this.cells[col][row].renderBase();
       }
     }
 
+    // draw ships
+    this.renderShips(masked);
+
+    // draw hit/miss/explosion on top
+    for (let col = 0; col &lt; this.boardSize; col++) {
+      for (let row = 0; row &lt; this.boardSize; row++) {
+        this.cells[col][row].renderOverlay(masked);
+      }
+    }
+
+    // labels
     p.push();
     p.textAlign(p.CENTER, p.CENTER);
     p.textSize(this.cellSize * 0.35);
     p.fill(CONFIG.colors.text);
     p.noStroke();
 
-    // Column labels (A, B, C, ...)
-    for (let col = 0; col &lt; this.boardSize; col++)
-    {
+    for (let col = 0; col &lt; this.boardSize; col++) {
       const label = String.fromCharCode(65 + col);
       p.text(
         label,
         startX + col * this.cellSize + this.cellSize / 2,
-        startY - this.cellSize * 0.4
+        startY - this.cellSize * 0.4,
       );
     }
 
-    // Row labels (1, 2, 3, ...)
-    for (let row = 0; row &lt; this.boardSize; row++)
-    {
+    for (let row = 0; row &lt; this.boardSize; row++) {
       const label = row + 1;
       p.text(
         label,
         startX - this.cellSize * 0.4,
-        startY + row * this.cellSize + this.cellSize / 2
+        startY + row * this.cellSize + this.cellSize / 2,
       );
     }
 
     p.pop();
+  }
+
+  /**
+   * Renders full ship sprites once per ship.
+   *
+   * @param {boolean} masked - If true, only sunk ships are shown.
+   * @returns {void}
+   */
+  renderShips(masked) {
+    const p = this.p;
+
+    for (const ship of this.ships) {
+      if (masked &amp;&amp; !ship.isSunk()) continue;
+
+      const sprite = this.shipSprites[ship.length];
+      if (!sprite || ship.cells.length === 0) continue;
+
+      // find top-left corner of the occupied cells
+      let minX = Infinity;
+      let minY = Infinity;
+
+      for (const cell of ship.cells) {
+        if (cell.x &lt; minX) minX = cell.x;
+        if (cell.y &lt; minY) minY = cell.y;
+      }
+
+      // special case: 1x1 ship has no real orientation
+      if (ship.length === 1) {
+        p.image(sprite, minX, minY, this.cellSize, this.cellSize);
+        continue;
+      }
+
+      // horizontal
+      if (ship.orientation === "E") {
+        p.image(sprite, minX, minY, this.cellSize * ship.length, this.cellSize);
+      } else if (ship.orientation === "W") {
+        p.push();
+        p.translate(minX + this.cellSize * ship.length, minY);
+        p.scale(-1, 1);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      }
+      // vertical
+      else if (ship.orientation === "S") {
+        p.push();
+        p.translate(minX + this.cellSize, minY);
+        p.rotate(p.HALF_PI);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      } else if (ship.orientation === "N") {
+        p.push();
+        p.translate(minX, minY + this.cellSize * ship.length);
+        p.rotate(-p.HALF_PI);
+        p.image(sprite, 0, 0, this.cellSize * ship.length, this.cellSize);
+        p.pop();
+      }
+    }
   }
 
   /**
@@ -171,8 +264,7 @@ export class Board
    * @param {"N"|"S"|"E"|"W"} orientation - Direction of ship placement.
    * @returns {Cell[]|null} Array of valid cells if placement is allowed, otherwise null.
    */
-  getValidPlacementCells(col, row, length, orientation)
-  {
+  getValidPlacementCells(col, row, length, orientation) {
     const DIRECTIONS = {
       N: { dc: 0, dr: -1 },
       S: { dc: 0, dr: 1 },
@@ -183,15 +275,13 @@ export class Board
     const { dc, dr } = DIRECTIONS[orientation];
     const cells = [];
 
-    for (let i = 0; i &lt; length; i++)
-    {
+    for (let i = 0; i &lt; length; i++) {
       const c = col + dc * i;
       const r = row + dr * i;
 
-      if (
-        c &lt; 0 || c >= this.boardSize ||
-        r &lt; 0 || r >= this.boardSize
-      ) return null;
+      if (c &lt; 0 || c >= this.boardSize || r &lt; 0 || r >= this.boardSize) {
+        return null;
+      }
 
       const cell = this.cells[c][r];
       if (cell.ship) return null;
@@ -211,13 +301,12 @@ export class Board
    * @param {"N"|"S"|"E"|"W"} orientation - Direction of placement.
    * @returns {Ship|false} The created ship if successful, otherwise false.
    */
-  placeShip(col, row, length, orientation)
-  {
+  placeShip(col, row, length, orientation) {
     const cells = this.getValidPlacementCells(col, row, length, orientation);
     if (!cells) return false;
 
     const ship = new Ship(length);
-    ship.placeOnCells(cells);
+    ship.placeOnCells(cells, orientation);
 
     this.ships.push(ship);
     return ship;
@@ -230,8 +319,7 @@ export class Board
    * @param {number} py - Pixel Y coordinate (canvas space).
    * @returns {Cell|null} Cell instance if inside board, otherwise null.
    */
-  getCellAt(px, py)
-  {
+  getCellAt(px, py) {
     const borderPixelSize = this.boardSize * this.cellSize;
     const startX = this.x - borderPixelSize / 2;
     const startY = this.y - borderPixelSize / 2;
@@ -239,11 +327,7 @@ export class Board
     const col = Math.floor((px - startX) / this.cellSize);
     const row = Math.floor((py - startY) / this.cellSize);
 
-    if (
-      col >= 0 &amp;&amp; col &lt; this.boardSize &amp;&amp;
-      row >= 0 &amp;&amp; row &lt; this.boardSize
-    )
-    {
+    if (col >= 0 &amp;&amp; col &lt; this.boardSize &amp;&amp; row >= 0 &amp;&amp; row &lt; this.boardSize) {
       return this.cells[col][row];
     }
 
@@ -255,11 +339,11 @@ export class Board
    *
    * @returns {boolean} True if every ship reports sunk.
    */
-  allShipsSunk()
-  {
-    return this.ships.every(ship => ship.isSunk());
+  allShipsSunk() {
+    return this.ships.every((ship) => ship.isSunk());
   }
-}</code></pre>
+}
+</code></pre>
         </article>
     </section>
 
@@ -269,13 +353,13 @@ export class Board
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selNumWindow.html">plugins/selNumWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selOptionWindow.html">plugins/selOptionWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Bot.html">Bot</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Feb 28 2026 17:31:12 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Mar 23 2026 00:52:39 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

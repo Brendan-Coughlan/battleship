@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Board<span class="signature">(p, x, y, boardSize, cellSize)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Board<span class="signature">(p, x, y, boardSize, cellSize, explosionFrames, shipSprites, waterFrames)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Represents a board object.</div>
         
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="Board"><span class="type-signature"></span>new Board<span class="signature">(p, x, y, boardSize, cellSize)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Board"><span class="type-signature"></span>new Board<span class="signature">(p, x, y, boardSize, cellSize, explosionFrames, shipSprites, waterFrames)</span><span class="type-signature"></span></h4>
     
 
     
@@ -201,6 +201,75 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>explosionFrames</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;p5.Image></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Explosion animation frames.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>shipSprites</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;number, p5.Image></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Ship sprites keyed by length.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>waterFrames</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;p5.Image></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Water animation frames.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -238,7 +307,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line40">line 40</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -353,7 +422,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line230">line 230</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -535,7 +604,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line205">line 205</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line294">line 294</a>
     </li></ul></dd>
     
 
@@ -775,7 +844,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line146">line 146</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line239">line 239</a>
     </li></ul></dd>
     
 
@@ -1015,7 +1084,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line186">line 186</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line276">line 276</a>
     </li></ul></dd>
     
 
@@ -1076,7 +1145,7 @@
     
 
     
-    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">(masked)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">(masked, frameColor)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -1136,7 +1205,33 @@
 
             
 
-            <td class="description last">If true, ships will not be rendered (used for opponent board).</td>
+            <td class="description last">If true, ships will not be rendered unless sunk.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>frameColor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;number></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Frame color of the board.</td>
         </tr>
 
     
@@ -1177,7 +1272,162 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line90">line 90</a>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line108">line 108</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="renderShips"><span class="type-signature"></span>renderShips<span class="signature">(masked)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Renders full ship sprites once per ship.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>masked</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true, only sunk ships are shown.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Board.js.html">Board.js</a>, <a href="Board.js.html#line179">line 179</a>
     </li></ul></dd>
     
 
@@ -1241,13 +1491,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selNumWindow.html">plugins/selNumWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-plugins_confirmWindow.html">plugins/confirmWindow</a></li><li><a href="module-plugins_selOptionWindow.html">plugins/selOptionWindow</a></li><li><a href="module-plugins_toastsWindow.html">plugins/toastsWindow</a></li></ul><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="Bot.html">Bot</a></li><li><a href="Cell.html">Cell</a></li><li><a href="GameManager.html">GameManager</a></li><li><a href="Player.html">Player</a></li><li><a href="Ship.html">Ship</a></li><li><a href="Timer.html">Timer</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Feb 28 2026 17:31:12 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Mar 23 2026 00:52:39 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
