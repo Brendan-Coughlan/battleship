@@ -855,7 +855,7 @@ export class GameManager
           this.currentPlayerID == 1 ? "Player 1 Wins!" : "Player 2 Wins!",
         variant: "success",
       });
-      await this.handleGameOver(this.currentPlayerID);
+      await this.handleGameOver(`Player ${this.currentPlayerID}`);
     }
 
     return true;
@@ -935,10 +935,10 @@ export class GameManager
         if (opponentBoard.allShipsSunk())
         {
           this.toast.render({
-            message: "Player 2 Wins!",
+            message: "AI Wins!",
             variant: "danger",
           });
-          await this.handleGameOver(2);
+          await this.handleGameOver("AI");
         }
       }
     }

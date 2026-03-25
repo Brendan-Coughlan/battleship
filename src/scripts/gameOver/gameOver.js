@@ -9,7 +9,7 @@ const newGameBtn = document.getElementById("newGameBtn");
 const homeBtn = document.getElementById("homeBtn");
 
 if (winner) {
-  resultText.textContent = `Player ${winner} wins! 🎉`;
+  resultText.textContent = `${winner} wins! 🎉`;
 } else {
   resultText.textContent = "Game Over";
 }
