@@ -18,7 +18,7 @@ https://drive.google.com/file/d/13FF2wbfPfjfe8J7fAAxuiQVennsSb_kH/view?usp=shari
 by JSDoc:
 
 <p align="center">
-  <img src="assets/API Doc.png" width="250">
+  <img src="assets/API Doc_2.png" width="250">
 </p>
 
 This project follows an object-oriented design approach to ensure better maintainability and scalability.
@@ -34,13 +34,14 @@ This project follows an object-oriented design approach to ensure better maintai
 
 ## UML Diagram
 
+https://lucid.app/lucidchart/15ec66e2-a129-47a5-b60f-0e5c46ef4457/edit?viewport_loc=-3417%2C-262%2C3959%2C1978%2C0_0&invitationId=inv_f99fdabf-dc79-4185-9498-d33d60b306c1
 <p align="center">
-  <img src="assets/UML.png" width="1000">
+  <img src="assets/UML_2.png" width="1000">
 </p>
 
 
 ## Program Flow Control Diagram
 
 <p align="center">
-  <img src="assets/flowControlChart.png" width="1100">
+  <img src="assets/flowControlChart_2.png" width="1100">
 </p>
